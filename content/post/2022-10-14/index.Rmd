@@ -12,10 +12,6 @@ series: []
 lastmod: '10-14-2022'
 ---
 
-```{r, eval=FALSE}
-blogdown::new_post("Post 1", ext = ".Rmd")
-```
-
 USA Education Budget Data
 https://datahub.io/core/usa-education-budget-analysis#resource-usa-education-budget-analysis_zip
 
