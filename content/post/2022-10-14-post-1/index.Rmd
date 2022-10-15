@@ -1,20 +1,18 @@
 ---
 title: Post 1
-author: Huy, Andrew, Kevin
-date: '10-14-2022'
+author: Huy, Kevin, Andrew 
+date: '2022-10-14'
 slug: []
 categories: []
 tags: []
-description: Here is our first post
+description: ~
 toc: yes
 authors: []
 series: []
-lastmod: '10-14-2022'
+lastmod: '2022-10-14T23:27:57-04:00'
+featuredVideo: ~
+featuredImage: ~
 ---
-
-```{r, eval=FALSE}
-blogdown::new_post("Post 1", ext = ".Rmd")
-```
 
 USA Education Budget Data
 https://datahub.io/core/usa-education-budget-analysis#resource-usa-education-budget-analysis_zip
@@ -46,9 +44,3 @@ The possible question would be the best defensive player under different scenari
 Also it could be the best fast break player of a specific team.
 We can also build a model based on percentage to find out what is the best play style for a player
 Comparing the same team from different season we can find out what is the best team building features are. For example, we can answer the question of what is the best way to build a team around westbrook ect.
-
-
-
-
-
-
