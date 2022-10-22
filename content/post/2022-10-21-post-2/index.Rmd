@@ -22,5 +22,13 @@ data <- read_csv(here::here("dataset-ignore", "2019-20_pbp.csv"))
 ```
 
 ```{r}
-head(data)
+(home_winners <- data %>% 
+  filter(Quarter == 1) %>%
+  filter(SecLeft == 720) %>%
+  filter(WinningTeam == HomeTeam))
+```
+
+```{r}
+most_home_w <- ggplot(home_winners,aes(WinningTeam))+geom_bar()
+most_home_w+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
