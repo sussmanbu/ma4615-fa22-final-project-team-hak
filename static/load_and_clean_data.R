@@ -1,10 +1,12 @@
 library(tidyverse)
 
-loan_data <- read_csv(here::here("dataset", "loan_refusal.csv"))
+nba_data <- read_csv(here::here("dataset-ignore", "2019-20_pbp.csv"))
 
 ## CLEAN the data
-loan_data_clean <- loan_data
+nba_data_clean <- nba_data
 
-write_csv(loan_data_clean, file = here::here("dataset", "loan_refusal_clean.csv"))
+write_csv(nba_data_clean, file = here::here("dataset-ignore", "nba_data_clean.csv"))
 
-save(loan_data_clean, file = here::here("dataset/loan_refusal.RData"))
+save(nba_data_clean, file = here::here("dataset-ignore/nba_data.RData"))
+
+
