@@ -16,9 +16,11 @@ featuredImage: ~
 
 We’re going to use the NBA data mentioned in post 1. The dataset is rather large with over 500,000 rows of data. It tracked every single game in the 2019-2020 season and to start I think we would just analyze one or two games first. There are columns that can be removed to make the data smaller such as location, date, time, quarter, etc. There is also a lot of missing data but its fine because each row tracks a single play, which may or may not involve multiple players. The important columns track points - 2 point shots made, 3 point shots made. A basic exploratory analysis could try and correlate shot percentage to wins. 
 
+Determining the small data set depends on the approach we take in order to achieve our goal- predicting wins and losses of an NBA team. First of all, it is apparent that obtaining a data set relating to a specific team means we are ‘Filtering’ the data related to a specific team. Also considering future teams have different rosters, we also need to filter the data relating to a specific player, and how he performs under different situations(c&s, p&r, off-ball etc.) The initial exploration can be from individual players like the relationship between shot distance and players shooting percentage when assisted by different players.
+
 ```{r}
 library(tidyverse)
-data <- read_csv(here::here("dataset-ignore", "2019-20_pbp.csv"))
+data <- read_csv(here::here("dataset-ignore", "./dataset-ignore/2019-20_pbp.csv"))
 ```
 
 ```{r}
