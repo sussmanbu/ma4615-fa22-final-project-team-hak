@@ -20,7 +20,7 @@ Determining the small data set depends on the approach we take in order to achie
 
 ```{r}
 library(tidyverse)
-data <- read_csv(here::here("dataset-ignore", "./dataset-ignore/2019-20_pbp.csv"))
+data <- read_csv(here::here("dataset-ignore", "../dataset-ignore/2019-20_pbp.csv"))
 ```
 
 ```{r}
