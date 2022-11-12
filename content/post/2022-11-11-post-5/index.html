@@ -1,0 +1,86 @@
+---
+title: Post 5
+author: Team HAK
+date: '2022-11-11'
+slug: []
+categories: []
+tags: []
+description: ~
+toc: yes
+authors: []
+series: []
+lastmod: '2022-11-11T21:45:32-05:00'
+featuredVideo: ~
+featuredImage: ~
+---
+
+
+<div id="TOC">
+
+</div>
+
+<p>We are in the process of combining the dataset in our previous post to a 2019-2020
+season total analysis dataset. You can find a reference to it here: <a href="https://www.basketball-reference.com/leagues/NBA_2020.html" class="uri">https://www.basketball-reference.com/leagues/NBA_2020.html</a></p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+## ✔ ggplot2 3.3.6      ✔ purrr   0.3.4 
+## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
+## ✔ tidyr   1.2.0      ✔ stringr 1.4.1 
+## ✔ readr   2.1.2      ✔ forcats 0.5.2 
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>teamadvance &lt;- read.csv(here::here(&quot;dataset-ignore&quot;, &#39;../dataset-ignore/19-20 nba advance data in cvs form.csv&#39;))
+team100toal &lt;- read_csv(here::here(&quot;dataset-ignore&quot;, &#39;../dataset-ignore/19-20 nba total 100 data.csv&#39;))</code></pre>
+<pre><code>## Rows: 30 Columns: 25
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (1): Team
+## dbl (24): Rk, G, MP, FG, FGA, FG%, 3P, 3PA, 3P%, 2P, 2PA, 2P%, FT, FTA, FT%,...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>teamadvance %&gt;%
+  mutate(win_rec50 = ifelse(W &gt;=41, &#39;YES&#39;, &#39;NO&#39;))%&gt;%
+  ggplot(aes(x = Age, fill = win_rec50)) +
+  geom_histogram(binwidth = 0.5, color = &#39;black&#39;) +
+  labs(x = &#39;Age&#39;, y = &#39;number of teams&#39;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code>teamadvance %&gt;%
+  mutate(winrate = W/(W+L))%&gt;%
+  mutate(win_rec50 = ifelse(W &gt;=41, &#39;YES&#39;, &#39;NO&#39;))%&gt;%
+  ggplot(aes(x = Age, y = winrate,color = win_rec50)) +
+  geom_point() +
+  geom_smooth(method = &#39;lm&#39;, se = FALSE)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>teamadvance %&gt;% 
+  mutate(winrate = W/(W+L))%&gt;%
+  mutate(win_rec50 = ifelse(W &gt;=41, &#39;YES&#39;, &#39;NO&#39;))%&gt;%
+  ggplot(aes(x = X3PAr, y = ORtg, color = win_rec50)) +
+  geom_point() +
+  geom_smooth(method = &#39;lm&#39;, se = FALSE)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>teamadvance %&gt;%
+  mutate(winrate = W/(W+L))%&gt;%
+  mutate(win_rec50 = ifelse(W &gt;=41, &#39;YES&#39;, &#39;NO&#39;))%&gt;%
+  ggplot(aes(x = ORB., y = DRtg, color = win_rec50)) +
+  geom_point() +
+  geom_smooth(method = &#39;lm&#39;, se = FALSE)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>teamadvance %&gt;%
+  mutate(winrate = W/(W+L))%&gt;%
+  mutate(win_rec50 = ifelse(W &gt;=41, &#39;YES&#39;, &#39;NO&#39;))%&gt;%
+  ggplot(aes(x = DRB., y = DRtg, color = win_rec50)) +
+  geom_point() +
+  geom_smooth(method = &#39;lm&#39;, se = FALSE)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Analysis:</p>
+<p>From these graphs we have learned that 3 point percentages contribute greatly to
+a teams offensive rating in teams that have at least a 50% win rate.
+Additionally, we found that offensive rebounds do not contribute to defensive
+team ratings for all teams. Further, we found a negative correlation between
+defensive rating and defensive rebounds.</p>

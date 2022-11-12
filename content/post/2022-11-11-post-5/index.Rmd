@@ -1,0 +1,75 @@
+---
+title: Post 5
+author: Team HAK
+date: '2022-11-11'
+slug: []
+categories: []
+tags: []
+description: ~
+toc: yes
+authors: []
+series: []
+lastmod: '2022-11-11T21:45:32-05:00'
+featuredVideo: ~
+featuredImage: ~
+---
+
+We are in the process of combining the dataset in our previous post to a 2019-2020
+season total analysis dataset. You can find a reference to it here: https://www.basketball-reference.com/leagues/NBA_2020.html
+
+```{r}
+library(tidyverse)
+teamadvance <- read.csv(here::here("dataset-ignore", '../dataset-ignore/19-20 nba advance data in cvs form.csv'))
+team100toal <- read_csv(here::here("dataset-ignore", '../dataset-ignore/19-20 nba total 100 data.csv'))
+teamadvance %>%
+  mutate(win_rec50 = ifelse(W >=41, 'YES', 'NO'))%>%
+  ggplot(aes(x = Age, fill = win_rec50)) +
+  geom_histogram(binwidth = 0.5, color = 'black') +
+  labs(x = 'Age', y = 'number of teams')
+```
+
+
+
+```{r}
+teamadvance %>%
+  mutate(winrate = W/(W+L))%>%
+  mutate(win_rec50 = ifelse(W >=41, 'YES', 'NO'))%>%
+  ggplot(aes(x = Age, y = winrate,color = win_rec50)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE)
+```
+
+```{r}
+teamadvance %>% 
+  mutate(winrate = W/(W+L))%>%
+  mutate(win_rec50 = ifelse(W >=41, 'YES', 'NO'))%>%
+  ggplot(aes(x = X3PAr, y = ORtg, color = win_rec50)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE)
+```
+
+```{r}
+teamadvance %>%
+  mutate(winrate = W/(W+L))%>%
+  mutate(win_rec50 = ifelse(W >=41, 'YES', 'NO'))%>%
+  ggplot(aes(x = ORB., y = DRtg, color = win_rec50)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE)
+```
+
+```{r}
+teamadvance %>%
+  mutate(winrate = W/(W+L))%>%
+  mutate(win_rec50 = ifelse(W >=41, 'YES', 'NO'))%>%
+  ggplot(aes(x = DRB., y = DRtg, color = win_rec50)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE)
+```
+
+Analysis:
+
+From these graphs we have learned that 3 point percentages contribute greatly to 
+a teams offensive rating in teams that have at least a 50% win rate. 
+Additionally, we found that offensive rebounds do not contribute to defensive
+team ratings for all teams. Further, we found a negative correlation between 
+defensive rating and defensive rebounds. 
