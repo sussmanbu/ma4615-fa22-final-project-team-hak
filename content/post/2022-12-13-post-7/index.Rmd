@@ -1,0 +1,25 @@
+---
+title: Post 7
+author: Team HAK
+date: '2022-12-13'
+slug: []
+categories: []
+tags: []
+description: ~
+toc: yes
+authors: []
+series: []
+lastmod: '2022-12-13T19:08:31-05:00'
+featuredVideo: ~
+featuredImage: ~
+---
+
+How are you continuing your exploratory data analysis? Remember all the ways we visualized the COVID data in just a couple days. Make sure you’ve done a thorough exploration for your project. Lots of ideas will be dead ends but keep looking and think about attaching more data.
+
+How do you plan to polish your visualizations and tables? Think about titles, captions, annotations, highlights. Look into ggpubr for tools to improve your figures and look into some of the options for displaying tables using https://gallery.htmlwidgets.org/.
+
+Please answer these questions over the next two weeks in your posts, in whatever order you like.
+
+7:
+
+We are planning on using multiple datasets to plot similar information. Specifically, we plan on creating a distribution of 3 point scores and plotting 3 point scoring by position played (using boxplots). Finally, we plan on creating a correlation plot between each combination of shooting statistics, for example the correlation between blocks and offensive rebounds (would be positive). We will polish these graphs using color and titles. 

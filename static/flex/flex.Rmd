@@ -1,38 +1,32 @@
----
-title: "Flex"
-output: 
-  flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
----
-
-```{r setup, include=FALSE}
-library(flexdashboard)
-library(tidyverse)
-library(plotly)
-library(DT)
-```
-
-Column {data-width=650}
------------------------------------------------------------------------
-
-### Chart A
-
-Comment
-
 ```{r}
-g <- ggplot(mpg, aes(x = displ, y = hwy, color = drv,
-  text = paste(manufacturer, "<br>", model))) +
-  geom_point(position = "jitter")
-ggplotly(g, tooltip = "text")
-```
+library(shiny)
 
-Column {data-width=350}
------------------------------------------------------------------------
+# Load the data
+data <- read.csv("../../dataset-ignore/2019-20_pbp.csv")
 
-### Chart B
+# Define the user interface for the app
+ui <- fluidPage(
 
-```{r}
-mpg %>% select(hwy, manufacturer, model, cyl, displ) %>%
-  datatable(rownames = FALSE)
+  # App title
+  titlePanel("NBA Team Stats"),
+
+  # Dropdown menu to select a team
+  selectInput("team", "Select a team:",
+              choices = data$Team),
+
+  # Output display of the team stats
+  tableOutput("stats")
+)
+
+# Define the server logic for the app
+server <- function(input, output) {
+
+  # Select the team stats for the selected team
+  output$stats <- renderTable({
+    data[data$Team == input$team, ]
+  })
+}
+
+# Run the app
+shinyApp(ui, server)
 ```
