@@ -12,6 +12,19 @@ draft: false
 
 </div>
 
+<p>Links:</p>
+<ol style="list-style-type: decimal">
+<li><a href="https://sports-statistics.com/sports-data/nba-basketball-datasets-csv-files/" class="uri">https://sports-statistics.com/sports-data/nba-basketball-datasets-csv-files/</a></li>
+<li><a href="https://www.basketball-reference.com/leagues/NBA_2020_per_game.html" class="uri">https://www.basketball-reference.com/leagues/NBA_2020_per_game.html</a></li>
+</ol>
+<p>Cross-sectional data for this project is collected from sports-statistics
+website (link #1). It contains recent data about NBA players’ performance, for the 2019-</p>
+<p>2020 season. The dataset contains 651 rows and 31 total columns about NBA
+players, ranging from their personal attributes, such as name and age, play information (i.e, games
+played, minutes played, games started) to individual performance metrics, such as field goal attempts per
+game, turnover, and field goal percentage.</p>
+<p>We use the second data set for our EDA and to help us build graphs such as the correlation plot.</p>
+<hr />
 <p>This comes from the file <code>content/data.Rmd</code>.</p>
 <p>Your first steps in this project will be to find data to work on.</p>
 <p>I recommend trying to find data that interests you and that you are knowledgeable about. A bad example would be if you have no interest in video games but your data set is about video games. I also recommend finding data that is related to current events, social justice, and other areas that have an impact.</p>
@@ -37,30 +50,33 @@ If you create a folder named <code>data</code> this will cause problems.</p>
 <pre><code>## 
 ## &gt; library(tidyverse)</code></pre>
 <pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
-## ✔ ggplot2 3.3.6     ✔ purrr   0.3.4
-## ✔ tibble  3.1.8     ✔ dplyr   1.0.9
-## ✔ tidyr   1.2.0     ✔ stringr 1.4.1
-## ✔ readr   2.1.2     ✔ forcats 0.5.1
+## ✔ ggplot2 3.3.6      ✔ purrr   0.3.4 
+## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
+## ✔ tidyr   1.2.0      ✔ stringr 1.4.1 
+## ✔ readr   2.1.2      ✔ forcats 0.5.2 
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
 ## ✖ dplyr::lag()    masks stats::lag()</code></pre>
 <pre><code>## 
-## &gt; loan_data &lt;- read_csv(here::here(&quot;dataset&quot;, &quot;loan_refusal.csv&quot;))</code></pre>
-<pre><code>## Rows: 20 Columns: 5
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr (1): bank
-## dbl (4): min, white, himin, hiwhite
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+## &gt; nba_data &lt;- read_csv(here::here(&quot;dataset-ignore&quot;, 
+## +     &quot;2019-20_pbp.csv&quot;))</code></pre>
+<pre><code>## New names:
+## Rows: 539265 Columns: 41
+## ── Column specification
+## ──────────────────────────────────────────────────────── Delimiter: &quot;,&quot; chr
+## (34): URL, GameType, Location, Date, WinningTeam, AwayTeam, AwayPlay, H... dbl
+## (5): Quarter, SecLeft, AwayScore, HomeScore, ShotDist lgl (1): ...41 time (1):
+## Time
+## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+## Specify the column types or set `show_col_types = FALSE` to quiet this message.
+## • `` -&gt; `...41`</code></pre>
 <pre><code>## 
-## &gt; loan_data_clean &lt;- loan_data
+## &gt; nba_data_clean &lt;- nba_data
 ## 
-## &gt; write_csv(loan_data_clean, file = here::here(&quot;dataset&quot;, 
-## +     &quot;loan_refusal_clean.csv&quot;))
+## &gt; write_csv(nba_data_clean, file = here::here(&quot;dataset-ignore&quot;, 
+## +     &quot;nba_data_clean.csv&quot;))
 ## 
-## &gt; save(loan_data_clean, file = here::here(&quot;dataset/loan_refusal.RData&quot;))</code></pre>
+## &gt; save(nba_data_clean, file = here::here(&quot;dataset-ignore/nba_data.RData&quot;))</code></pre>
 <p>Note how I use the <code>here::here</code> function from the <a href="https://here.r-lib.org/articles/here.html"><code>here</code> package</a> to avoid path problems.
 This function is used to specify directories within the project’s root directory.
 You should never use absolute paths (eg. <code>/Users/danielsussman/path/to/project/</code> or <code>C:\\MA415\\Final_Project\\</code>) and using <code>here</code> ensures that it doesn’t matter what the current working directory is as long as you have this RStudio Project open.</p>

@@ -7,7 +7,22 @@ featuredImage: images/data-import-cheatsheet-thumbs.png
 draft: false
 ---
 
+Links:
 
+1. https://sports-statistics.com/sports-data/nba-basketball-datasets-csv-files/
+2. https://www.basketball-reference.com/leagues/NBA_2020_per_game.html
+
+Cross-sectional data for this project is collected from sports-statistics
+website (link #1). It contains recent data about NBA players’ performance, for the 2019-
+
+2020 season. The dataset contains 651 rows and 31 total columns about NBA
+players, ranging from their personal attributes, such as name and age, play information (i.e, games
+played, minutes played, games started) to individual performance metrics, such as field goal attempts per
+game, turnover, and field goal percentage.
+
+We use the second data set for our EDA and to help us build graphs such as the correlation plot.
+
+---
 
 This comes from the file `content/data.Rmd`.
 
@@ -22,7 +37,6 @@ Data from the census, weather data, economic data, are all relatively easy to co
 
 
 ## Where to keep data?
-
 
 Below 50mb: In `dataset` folder
 
