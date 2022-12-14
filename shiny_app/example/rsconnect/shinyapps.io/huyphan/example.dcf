@@ -1,0 +1,11 @@
+name: example
+title:
+username:
+account: huyphan
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7889197
+bundleId: 6634485
+url: https://huyphan.shinyapps.io/example/
+when: 1670988999.14885
+lastSyncTime: 1670988999.14886

@@ -7,45 +7,27 @@
 #    http://shiny.rstudio.com/
 # 
 #
-library(tidyverse)
-library(shiny)
-df <- read_csv("loan_refusal.csv") %>% 
-  pivot_longer(cols = min:hiwhite, names_to = "group", values_to = "reject_rate")
+# First, install and load the shiny package
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
+data <- read.csv("./team_stats.csv")
 
-  # Application title
-  titlePanel("Loan refusal"),
+ui <- shinyUI(fluidPage(
+  selectInput("x_var", "Select the x variable:",
+              choices  = c("Age","W", "L","PW", "PL","MOV", "SOS", "SRS", "ORtg", "DRtg", "NRtg", "Pace", "FTr", "X3PAr", "TS.")),
+  selectInput("y_var", "Select the y variable:",
+              choices =  c("Age","W", "L","PW", "PL","MOV", "SOS", "SRS", "ORtg", "DRtg", "NRtg", "Pace", "FTr", "X3PAr", "TS.")),
+  plotOutput("plot")
+))
 
-  # Sidebar with a slider input for number of bins 
-  sidebarLayout(
-    sidebarPanel(
-      checkboxGroupInput(
-        "group",
-        "Select groups",
-        unique(df$group),
-        selected = unique(df$group)[1]
-      )
-    ),
-    # Show a plot of the generated distribution
-    mainPanel(
-     plotOutput("barPlot")
-    )
-  )
-)
+server <- shinyServer(function(input, output) {
+  plot_data <- reactive({
+    data[, c(input$x_var, input$y_var)]
+  })
+  output$plot <- renderPlot({
+    plot(plot_data()[,1], plot_data()[,2])
+  })
+})
 
-# Define server logic required to draw a histogram
-server <- function(input, output) {
-
-    output$barPlot <- renderPlot({
-        # show data for  input$group from ui.R
-        df %>%
-          filter(group %in% input$group) %>% 
-          ggplot(aes(y = bank, x = reject_rate, fill = group)) +
-          geom_col(position = "dodge")
-    })
-}
-
-# Run the application 
+# Run the app
 shinyApp(ui = ui, server = server)
+# runApp(shiny_app)

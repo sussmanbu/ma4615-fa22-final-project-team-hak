@@ -7,47 +7,312 @@ featuredImage: https://upload.wikimedia.org/wikipedia/commons/7/77/Pebbleswithqu
 draft: false
 ---
 
-<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
 
 <div id="TOC">
 
 </div>
 
-<p>This comes from the file <code>content/analysis.Rmd</code>.</p>
-<p>We describe here our detailed data analysis.</p>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
-## ✓ tibble  3.1.6     ✓ dplyr   1.0.8
-## ✓ tidyr   1.1.4     ✓ stringr 1.4.0
-## ✓ readr   2.1.1     ✓ forcats 0.5.1</code></pre>
-<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>print(getwd())</code></pre>
-<pre><code>## [1] &quot;/Users/dsussman/Dropbox (Personal)/Teaching/MA_415/project_template/content&quot;</code></pre>
-<pre class="r"><code>data &lt;- read_csv(here::here(&quot;dataset/loan_refusal_clean.csv&quot;))</code></pre>
-<pre><code>## Rows: 20 Columns: 5</code></pre>
-<pre><code>## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr (1): bank
-## dbl (4): min, white, himin, hiwhite
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<pre class="r"><code>load(here::here(&quot;dataset/loan_refusal.RData&quot;))
-print(ls())</code></pre>
-<pre><code>## [1] &quot;data&quot;            &quot;loan_data_clean&quot;</code></pre>
-<div id="note-on-attribution" class="section level2">
-<h2>Note on Attribution</h2>
-<p>If you are directly quoting from a source, please make that clear. You can show quotes using <code>&gt;</code> like this</p>
-<pre><code>&gt; To be or not to be.</code></pre>
-<blockquote>
-<p>To be or not to be.</p>
-</blockquote>
-<p>Also, make sure to provide a link or citation to where you are quoting from.</p>
-<hr />
+<pre class="r"><code>#if(!require(installr)) {
+#install.packages(installr); require(installr)} #load / install+load installr
+# using the package:
+#updateR()</code></pre>
+<pre class="r"><code>#update.packages(ask = FALSE)
+#install.packages(&quot;lifecycle&quot;)
+#install.packages(tidymodels)
+#install.packages(&quot;rsample&quot;)
+library(readr)
+library(readxl)
+library(tidyr)
+library(tidymodels)
+library(dplyr)
+library(tidyverse)
+library(fastDummies)
+library(reshape2)
+library(ggplot2)
+library(caTools)
+library(relaimpo)
+library(MASS)</code></pre>
+<pre class="r"><code>player_df &lt;- read_excel(&quot;../dataset-ignore/19-20 palyer total (1).xlsx&quot;)
+head(player_df)</code></pre>
+<pre><code>## # A tibble: 6 × 31
+##      Rk Player Pos     Age Tm        G    GS    MP    FG   FGA `FG%`  `3P` `3PA`
+##   &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1 Steve… C        26 OKC      63    63  1680   283   478 0.592     1     3
+## 2     2 Bam A… PF       22 MIA      72    72  2417   440   790 0.557     2    14
+## 3     3 LaMar… C        34 SAS      53    53  1754   391   793 0.493    61   157
+## 4     4 Kyle … C        23 MIA       2     0    13     1     2 0.5       0     0
+## 5     5 Nicke… SG       21 NOP      47     1   591    98   266 0.368    46   133
+## 6     6 Grays… SG       24 MEM      38     0   718   117   251 0.466    57   141
+## # … with 18 more variables: `3P%` &lt;dbl&gt;, `2P` &lt;dbl&gt;, `2PA` &lt;dbl&gt;, `2P%` &lt;dbl&gt;,
+## #   `eFG%` &lt;dbl&gt;, FT &lt;dbl&gt;, FTA &lt;dbl&gt;, `FT%` &lt;dbl&gt;, ORB &lt;dbl&gt;, DRB &lt;dbl&gt;,
+## #   TRB &lt;dbl&gt;, AST &lt;dbl&gt;, STL &lt;dbl&gt;, BLK &lt;dbl&gt;, TOV &lt;dbl&gt;, PF &lt;dbl&gt;, PTS &lt;dbl&gt;,
+## #   `Player-additional` &lt;chr&gt;</code></pre>
+<div id="data-preparation" class="section level1">
+<h1>Data Preparation</h1>
+<pre class="r"><code>play_num = subset(player_df, select = -c(Player, Rk,Tm,`Player-additional`,GS,FG, FGA,`2P`,`3PA`,`2PA`,`2P%`, `3P%`, `eFG%`, `FG%`,FT, FTA,TRB, PTS))
+play_num &lt;- drop_na(play_num)
+
+
+length(play_num)</code></pre>
+<pre><code>## [1] 13</code></pre>
+<pre class="r"><code>dummy &lt;- dummy_cols(play_num, select_columns = c(&quot;Pos&quot;), remove_first_dummy = TRUE)
+model_data &lt;- subset(dummy, select = -c(Pos))</code></pre>
+<pre class="r"><code>num_data &lt;- play_num %&gt;% dplyr::select(where(is.numeric))</code></pre>
 </div>
+<div id="exploratory-data-analysis" class="section level1">
+<h1>Exploratory Data Analysis</h1>
+<pre class="r"><code>summary(num_data)</code></pre>
+<pre><code>##       Age              G               MP               3P        
+##  Min.   :19.00   Min.   : 1.00   Min.   :   4.0   Min.   :  0.00  
+##  1st Qu.:23.00   1st Qu.:19.00   1st Qu.: 270.5   1st Qu.:  4.25  
+##  Median :25.00   Median :43.00   Median : 806.5   Median : 28.00  
+##  Mean   :25.83   Mean   :40.03   Mean   : 908.8   Mean   : 46.07  
+##  3rd Qu.:28.00   3rd Qu.:60.00   3rd Qu.:1477.2   3rd Qu.: 70.00  
+##  Max.   :43.00   Max.   :74.00   Max.   :2556.0   Max.   :299.00  
+##       FT%              ORB              DRB             AST       
+##  Min.   :0.0000   Min.   :  0.00   Min.   :  0.0   Min.   :  0.0  
+##  1st Qu.:0.6670   1st Qu.:  9.00   1st Qu.: 37.0   1st Qu.: 18.0  
+##  Median :0.7705   Median : 24.00   Median : 96.0   Median : 52.5  
+##  Mean   :0.7438   Mean   : 37.86   Mean   :130.8   Mean   : 90.2  
+##  3rd Qu.:0.8360   3rd Qu.: 52.00   3rd Qu.:192.8   3rd Qu.:115.0  
+##  Max.   :1.0000   Max.   :258.00   Max.   :716.0   Max.   :684.0  
+##       STL              BLK              TOV               PF        
+##  Min.   :  0.00   Min.   :  0.00   Min.   :  0.00   Min.   :  0.00  
+##  1st Qu.:  7.25   1st Qu.:  4.00   1st Qu.: 14.00   1st Qu.: 28.25  
+##  Median : 23.00   Median : 10.00   Median : 37.00   Median : 74.00  
+##  Mean   : 28.93   Mean   : 18.59   Mean   : 52.12   Mean   : 78.58  
+##  3rd Qu.: 45.00   3rd Qu.: 24.00   3rd Qu.: 74.75   3rd Qu.:122.00  
+##  Max.   :125.00   Max.   :196.00   Max.   :308.00   Max.   :278.00</code></pre>
+<p>Table 1</p>
+<p>The descriptive statistic output shows the mean age of NBA players is approximately 26 years (25.83).
+The oldest player is 43 years and the youngest is 19 resulting in a range of about 25 years. The maximum
+number of games a player has started (G) is 74 and the minimum is 1, and this variation could be related
+to player performance whereby a high-performing player is prioritized. The same logic applies to minutes
+played per game (MP). Our target variable is 3P, which is the number of 3-point field goals per game.
+The mean 3-P score is 46.07, the minimum is 0 and the maximum is 299 per game. The 75th quartile is
+201, implying that at least 25% of all NBA players score make about 70 3P scores per game. This cohort
+may represent elite players with consistently good performance, hence, sports organizations should focus
+on not to lose them to rival teams
+The histogram below illustrates the distribution of 3P scoring. It is evident that distribution of 3P scores is
+skewed to the right, as evidenced by most values that lie on the left side of the chart. This means that most
+NBA players score fewer 3P field goals. However, we can discern the presence of outliers – a bar far
+away from the rest of other bars. This outlier represents NBA players with exceptionally high 3P scores
+compared to the general population of NBA players. We are more interested in the general population,
+and hence, it was worthwhile to remove it to avoid skewing the performance of our model.</p>
+<pre class="r"><code>hist(num_data$`3P`, main = &quot; Distribution of 3P&quot;, xlab = &#39;bins&#39;)</code></pre>
+<p><img src="/analysis_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Figure 1 Distribution of 3P Scores</p>
+<pre class="r"><code>boxplot(play_num$`3P`~ play_num$Pos, 
+        main = &#39; A Boxplot of 3 Point Scoring by Player Position&#39;,
+        ylab = &#39;3 Point Scoring (3P)&#39;, xlab = &#39;Player Position&#39;, col = &#39;yellow&#39;, border = &#39;brown&#39;)</code></pre>
+<p><img src="/analysis_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Figure 2 Side-to-Side Boxplot of 3 Point Scores by Position</p>
+<p>The boxplot above captures the distribution of 3-point scores by player position. Based on the
+plot, we can discern a significant difference in 3P scores across player positions, with SF-PF registering
+the highest mean 3P scores, followed at distance by SF-FG, and SG-PG. This finding supports the
+inclusion of player position as a predictor of the 3P score and checks whether the existing relationship is
+statistically significant.</p>
+<pre class="r"><code>cormatrx  &lt;- round(cor(num_data),3) 
+cormat_melt &lt;- melt(cormatrx)
+
+corr_heatmap &lt;- ggplot(data = cormat_melt, aes(x = Var1, y=Var2, label = value, fill = value))+
+  geom_tile()
+corr_heatmap+
+  geom_text(aes(Var1, Var2, label = value), color = &quot;black&quot;, size = 4)</code></pre>
+<p><img src="/analysis_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre class="r"><code>set.seed(1)
+
+sample &lt;- sample.split(model_data$`3P`, SplitRatio = 0.7)
+train  &lt;- subset(model_data, sample == TRUE)
+test   &lt;- subset(model_data, sample == FALSE)</code></pre>
+<p>Figure 3 Correlation Plot</p>
+<p>The correlation plot above identifies the direction and magnitude of association between pairs of variables
+in our dataset. It is evident that there is a moderate positive relationship between 3P scores and games
+played (G, r = 0.644), 3P scores and assists per game (AST, r = 0.613), 3P scores and turnover per game
+(TOV, r = 0.667), and a strong positive relationship between 3P scores and games played (G, r=0.773).
+We can also identify the presence of multicollinearity issues in our dataset, as evidenced by the high
+correlation between pairs of independent variables. For example, there is a high correlation between
+minutes played (MP) and personal fouls per game (PF, r = 0.897), turnover per game (TOV) and MP (r =
+0.853), assist per game (AST) and turnover per game (TOV, r = 0.897). A possible approach to address
+this issue is to remove one of the variables from each pair. We included a cut-off of 0.85 in our regression
+model funciton to eliminate one of the independent variables that are highly correlated, preferably one
+with a higher p-value.</p>
+</div>
+<div id="data-transformation" class="section level1">
+<h1>Data Transformation</h1>
+<p>It is worthwhile to note that issues such as missing values and outliers were addressed by removing rows
+containing NA and extreme values. Our next step is to perform data transformation. Firstly, we performed
+dummy encoding on our only categorical data, player position, using the dummy_cols () function and
+removed the first dummy column to avoid the multicollinearity issue. Secondly, variables, which contain</p>
+<p>large values, such as Age, STL (steals per game), MP (minutes played), and BLK (blocks per game) were
+normalized. Most importantly, all these transformations, including splitting data into training sets were
+done at once using the recipe function in R and the results were also mirrored to the testing data using the
+bake function.</p>
+</div>
+<div id="optimal-model-based-on-the-lowest-aic-value" class="section level1">
+<h1>Optimal Model: Based on the Lowest AIC Value</h1>
+<pre class="r"><code>rec &lt;- recipe(
+  `3P` ~.,
+  data = train)%&gt;%
+  step_normalize(Age, STL, MP, BLK)%&gt;%
+  step_corr(all_numeric_predictors(), threshold = 0.85)</code></pre>
+<pre class="r"><code>log.rec.prep &lt;- prep(rec, training = train)
+
+train_set &lt;- log.rec.prep %&gt;% 
+  bake(new_data = NULL)
+l.model = lm(`3P`~., data = train_set)
+summary(l.model)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = `3P` ~ ., data = train_set)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -148.376  -14.064   -1.441   11.510  145.102 
+## 
+## Coefficients: (1 not defined because of singularities)
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -29.77606    9.13458  -3.260 0.001206 ** 
+## Age           1.65163    1.48740   1.110 0.267453    
+## G             0.97650    0.11234   8.692  &lt; 2e-16 ***
+## `FT%`        37.40258   10.65237   3.511 0.000494 ***
+## ORB          -0.76994    0.07675 -10.032  &lt; 2e-16 ***
+## DRB           0.19292    0.03176   6.074 2.79e-09 ***
+## AST           0.11406    0.02531   4.507 8.52e-06 ***
+## STL           6.15142    2.84676   2.161 0.031271 *  
+## BLK           1.48954    2.49903   0.596 0.551464    
+## `Pos_C-PF`   16.42202   30.75384   0.534 0.593635    
+## Pos_PF        3.89151    4.88875   0.796 0.426473    
+## `Pos_PF-C`    6.72209   18.24347   0.368 0.712711    
+## `Pos_PF-SF` -17.63716   21.96377  -0.803 0.422421    
+## Pos_PG      -10.07369    6.45317  -1.561 0.119264    
+## `Pos_PG-SG`  -4.40865   30.77196  -0.143 0.886147    
+## Pos_SF        4.08671    5.53191   0.739 0.460469    
+## `Pos_SF-C`         NA         NA      NA       NA    
+## `Pos_SF-PF`  14.96257   21.99959   0.680 0.496796    
+## `Pos_SF-SG`   9.59393   30.96106   0.310 0.756813    
+## Pos_SG       11.67706    5.52524   2.113 0.035154 *  
+## `Pos_SG-PG`  20.92139   30.75211   0.680 0.496674    
+## `Pos_SG-SF`  -1.45232   30.73982  -0.047 0.962340    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 30.41 on 421 degrees of freedom
+## Multiple R-squared:  0.6852, Adjusted R-squared:  0.6703 
+## F-statistic: 45.83 on 20 and 421 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Figure 4 Final Model</p>
+<p>While all 25 predictor variables namely, age, G, MP, STL, FT%, ORB, AST, BLK, TOV, PF, and
+POS (14 dummy variables) were in the model, the StepAIC selected only 8 variables to statistically
+significant at 0.05 and with the lowest AIC value. The selected variables include G, FT%, ORB, AST,
+Pos_PG and Pos_SG. The coefficient on G is 0.9795, implying that a unit increase in the number of
+games played increases 3 points by at least 0.97, approximately 1, presuming all other factors are held
+constant. The coefficient on Pos_SG (SG = 1, not SG = 0) is 7.993, implying that NBA players in SG
+(shooting guard) position score 8 3-P scores higher than all other positions, when other factors are also
+held constant. In contrast, NBA players in PG positions score 13.60 (approximately 14) less 3P scores</p>
+<p>compared to players in other positions. The global F test informs us to reject the null hypothesis all
+coefficients are equal to zero because there is sufficient evidence to indicate that at least one covariate is
+statistically different from zero, F (8, 433) = 116.2, p-value = 2.2e-16 &lt;0.05. Lastly, the adjusted R-
+squared is 0.6763, implying that this final model explains at least 67.63% of the variation in 3-P scores
+across NBA players. The resulting RMSE from prediction on test data is 30.583.</p>
+<pre class="r"><code>testing_set &lt;- bake(log.rec.prep, test)
+test[1:10, names(testing_set)]</code></pre>
+<pre><code>## # A tibble: 10 × 22
+##      Age     G `FT%`   ORB   DRB   AST   STL   BLK `Pos_C-PF` Pos_PF `Pos_PF-C`
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;      &lt;int&gt;  &lt;int&gt;      &lt;int&gt;
+##  1    27    10 0.636     2     7    21     5     2          0      0          0
+##  2    29    18 0.655    24    63    21    18     8          0      1          0
+##  3    26    10 0.5       1    20     8     0     6          0      0          0
+##  4    22     5 0.5       2     1     2     0     0          0      1          0
+##  5    22    69 0.706    80   284   108    96    45          0      0          0
+##  6    34    53 0.838    34   212    91    69    15          0      0          0
+##  7    34    32 0.778    21   125    50    35     7          0      0          0
+##  8    19    56 0.614    50   229   143    55    17          0      0          0
+##  9    29    58 0.767    76   289   212    61    29          0      0          0
+## 10    31    22 0.9      25    75    66    17     8          0      0          0
+## # … with 11 more variables: `Pos_PF-SF` &lt;int&gt;, Pos_PG &lt;int&gt;, `Pos_PG-SG` &lt;int&gt;,
+## #   Pos_SF &lt;int&gt;, `Pos_SF-C` &lt;int&gt;, `Pos_SF-PF` &lt;int&gt;, `Pos_SF-SG` &lt;int&gt;,
+## #   Pos_SG &lt;int&gt;, `Pos_SG-PG` &lt;int&gt;, `Pos_SG-SF` &lt;int&gt;, `3P` &lt;dbl&gt;</code></pre>
+<pre class="r"><code>fitted = predict(l.model, newdata = testing_set)</code></pre>
+<pre><code>## Warning in predict.lm(l.model, newdata = testing_set): prediction from a rank-
+## deficient fit may be misleading</code></pre>
+<pre class="r"><code>actuals = as.numeric(testing_set$`3P`)
+
+sqrt(mean((actuals - fitted)^2))</code></pre>
+<pre><code>## [1] 30.18264</code></pre>
+<pre class="r"><code>l.model.fin &lt;- lm(`3P` ~., data = train_set) %&gt;%
+  stepAIC(trace = FALSE)
+
+summary(l.model.fin)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = `3P` ~ G + `FT%` + ORB + DRB + AST + STL + Pos_PG + 
+##     Pos_SG, data = train_set)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -147.628  -13.627   -1.535   11.659  144.382 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -28.42290    8.41698  -3.377 0.000799 ***
+## G             0.97954    0.11033   8.878  &lt; 2e-16 ***
+## `FT%`        38.85695   10.36809   3.748 0.000203 ***
+## ORB          -0.78189    0.06655 -11.749  &lt; 2e-16 ***
+## DRB           0.20192    0.03053   6.614 1.11e-10 ***
+## AST           0.11160    0.02425   4.603 5.49e-06 ***
+## STL           6.72707    2.67047   2.519 0.012126 *  
+## Pos_PG      -13.60417    5.12053  -2.657 0.008180 ** 
+## Pos_SG        7.99634    4.00340   1.997 0.046408 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 30.13 on 433 degrees of freedom
+## Multiple R-squared:  0.6822, Adjusted R-squared:  0.6763 
+## F-statistic: 116.2 on 8 and 433 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>testing_set &lt;- bake(log.rec.prep, test)
+test[1:10, names(testing_set)]</code></pre>
+<pre><code>## # A tibble: 10 × 22
+##      Age     G `FT%`   ORB   DRB   AST   STL   BLK `Pos_C-PF` Pos_PF `Pos_PF-C`
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;      &lt;int&gt;  &lt;int&gt;      &lt;int&gt;
+##  1    27    10 0.636     2     7    21     5     2          0      0          0
+##  2    29    18 0.655    24    63    21    18     8          0      1          0
+##  3    26    10 0.5       1    20     8     0     6          0      0          0
+##  4    22     5 0.5       2     1     2     0     0          0      1          0
+##  5    22    69 0.706    80   284   108    96    45          0      0          0
+##  6    34    53 0.838    34   212    91    69    15          0      0          0
+##  7    34    32 0.778    21   125    50    35     7          0      0          0
+##  8    19    56 0.614    50   229   143    55    17          0      0          0
+##  9    29    58 0.767    76   289   212    61    29          0      0          0
+## 10    31    22 0.9      25    75    66    17     8          0      0          0
+## # … with 11 more variables: `Pos_PF-SF` &lt;int&gt;, Pos_PG &lt;int&gt;, `Pos_PG-SG` &lt;int&gt;,
+## #   Pos_SF &lt;int&gt;, `Pos_SF-C` &lt;int&gt;, `Pos_SF-PF` &lt;int&gt;, `Pos_SF-SG` &lt;int&gt;,
+## #   Pos_SG &lt;int&gt;, `Pos_SG-PG` &lt;int&gt;, `Pos_SG-SF` &lt;int&gt;, `3P` &lt;dbl&gt;</code></pre>
+<pre class="r"><code>fitted = predict(l.model.fin, newdata = testing_set)
+actuals = as.numeric(testing_set$`3P`)
+
+sqrt(mean((actuals - fitted)^2))</code></pre>
+<pre><code>## [1] 30.58373</code></pre>
+<pre class="r"><code>plot(fitted,
+     xlab = &quot;Predicted Values&quot;,
+     ylab = &quot;Observed Values&quot;)+
+  geom_point()+
+abline(a = 0,                                     
+       b = 1,
+       col = &quot;red&quot;,
+       lwd = 2)</code></pre>
+<p><img src="/analysis_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<pre><code>## integer(0)</code></pre>
+<pre class="r"><code>rel_imp &lt;- calc.relimp(l.model.fin, type = c(&quot;lmg&quot;), rela = TRUE)
+boo_rslts &lt;- boot.relimp(l.model.fin, b=1000)
+ci &lt;- booteval.relimp(boo_rslts, norank = T)
+plot(ci)</code></pre>
+<p><img src="/analysis_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>Figure 5 Relative Importance</p>
+<p>Based on the bar chart, games played (G) are ranked as the important predictor of 3-P scores, followed
+closely by AST (number of assists), then STL (steals per game), (DRB) defensive, and (ORB) offensive
+rebounds. Scouts should pay more attention to these characteristics when scouting for NBA players to
+play in the professional league as it will guarantee positive returns on their investments.</p>
+<hr />
 <div id="rubric-on-this-page" class="section level2">
 <h2>Rubric: On this page</h2>
 <p>you will</p>
@@ -94,4 +359,5 @@ print(ls())</code></pre>
 </ul></li>
 </ul>
 <p><strong>NOTE</strong>: Your Data Analysis can be broken up into multiple pages if that helps with your organization.</p>
+</div>
 </div>

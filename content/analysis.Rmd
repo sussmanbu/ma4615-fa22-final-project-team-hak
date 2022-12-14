@@ -7,32 +7,247 @@ featuredImage: https://upload.wikimedia.org/wikipedia/commons/7/77/Pebbleswithqu
 draft: false
 ---
 
-This comes from the file `content/analysis.Rmd`.
+```{r}
+#if(!require(installr)) {
+#install.packages(installr); require(installr)} #load / install+load installr
+# using the package:
+#updateR()
+```
 
-We describe here our detailed data analysis.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE}
+#update.packages(ask = FALSE)
+#install.packages("lifecycle")
+#install.packages(tidymodels)
+#install.packages("rsample")
+library(readr)
+library(readxl)
+library(tidyr)
+library(tidymodels)
+library(dplyr)
+library(tidyverse)
+library(fastDummies)
+library(reshape2)
+library(ggplot2)
+library(caTools)
+library(relaimpo)
+library(MASS)
+```
+
+```{r message=FALSE, warning=FALSE}
+player_df <- read_excel("../dataset-ignore/19-20 palyer total (1).xlsx")
+head(player_df)
+```
+# Data Preparation 
+```{r}
+
+play_num = subset(player_df, select = -c(Player, Rk,Tm,`Player-additional`,GS,FG, FGA,`2P`,`3PA`,`2PA`,`2P%`, `3P%`, `eFG%`, `FG%`,FT, FTA,TRB, PTS))
+play_num <- drop_na(play_num)
+
+
+length(play_num)
+```
+
+```{r message=FALSE, warning=FALSE}
+dummy <- dummy_cols(play_num, select_columns = c("Pos"), remove_first_dummy = TRUE)
+model_data <- subset(dummy, select = -c(Pos))
+```
+
+```{r}
+
+num_data <- play_num %>% dplyr::select(where(is.numeric))
+```
+
+# Exploratory Data Analysis
+
+```{r}
+
+summary(num_data)
+```
+
+Table 1
+
+The descriptive statistic output shows the mean age of NBA players is approximately 26 years (25.83).
+The oldest player is 43 years and the youngest is 19 resulting in a range of about 25 years. The maximum
+number of games a player has started (G) is 74 and the minimum is 1, and this variation could be related
+to player performance whereby a high-performing player is prioritized. The same logic applies to minutes
+played per game (MP). Our target variable is 3P, which is the number of 3-point field goals per game.
+The mean 3-P score is 46.07, the minimum is 0 and the maximum is 299 per game. The 75th quartile is
+201, implying that at least 25% of all NBA players score make about 70 3P scores per game. This cohort
+may represent elite players with consistently good performance, hence, sports organizations should focus
+on not to lose them to rival teams
+The histogram below illustrates the distribution of 3P scoring. It is evident that distribution of 3P scores is
+skewed to the right, as evidenced by most values that lie on the left side of the chart. This means that most
+NBA players score fewer 3P field goals. However, we can discern the presence of outliers – a bar far
+away from the rest of other bars. This outlier represents NBA players with exceptionally high 3P scores
+compared to the general population of NBA players. We are more interested in the general population,
+and hence, it was worthwhile to remove it to avoid skewing the performance of our model.
+
+```{r}
+
+hist(num_data$`3P`, main = " Distribution of 3P", xlab = 'bins')
+```
+
+Figure 1 Distribution of 3P Scores
+
+```{r fig.height=8}
+boxplot(play_num$`3P`~ play_num$Pos, 
+        main = ' A Boxplot of 3 Point Scoring by Player Position',
+        ylab = '3 Point Scoring (3P)', xlab = 'Player Position', col = 'yellow', border = 'brown')
+```
+
+Figure 2 Side-to-Side Boxplot of 3 Point Scores by Position
+
+The boxplot above captures the distribution of 3-point scores by player position. Based on the
+plot, we can discern a significant difference in 3P scores across player positions, with SF-PF registering
+the highest mean 3P scores, followed at distance by SF-FG, and SG-PG. This finding supports the
+inclusion of player position as a predictor of the 3P score and checks whether the existing relationship is
+statistically significant.
+
+```{r}
+cormatrx  <- round(cor(num_data),3) 
+cormat_melt <- melt(cormatrx)
+
+corr_heatmap <- ggplot(data = cormat_melt, aes(x = Var1, y=Var2, label = value, fill = value))+
+  geom_tile()
+corr_heatmap+
+  geom_text(aes(Var1, Var2, label = value), color = "black", size = 4)
+```
+```{r}
+
+set.seed(1)
+
+sample <- sample.split(model_data$`3P`, SplitRatio = 0.7)
+train  <- subset(model_data, sample == TRUE)
+test   <- subset(model_data, sample == FALSE)
+```
+
+Figure 3 Correlation Plot
+
+The correlation plot above identifies the direction and magnitude of association between pairs of variables
+in our dataset. It is evident that there is a moderate positive relationship between 3P scores and games
+played (G, r = 0.644), 3P scores and assists per game (AST, r = 0.613), 3P scores and turnover per game
+(TOV, r = 0.667), and a strong positive relationship between 3P scores and games played (G, r=0.773).
+We can also identify the presence of multicollinearity issues in our dataset, as evidenced by the high
+correlation between pairs of independent variables. For example, there is a high correlation between
+minutes played (MP) and personal fouls per game (PF, r = 0.897), turnover per game (TOV) and MP (r =
+0.853), assist per game (AST) and turnover per game (TOV, r = 0.897). A possible approach to address
+this issue is to remove one of the variables from each pair. We included a cut-off of 0.85 in our regression
+model funciton to eliminate one of the independent variables that are highly correlated, preferably one
+with a higher p-value.
+
+# Data Transformation
+
+It is worthwhile to note that issues such as missing values and outliers were addressed by removing rows
+containing NA and extreme values. Our next step is to perform data transformation. Firstly, we performed
+dummy encoding on our only categorical data, player position, using the dummy_cols () function and
+removed the first dummy column to avoid the multicollinearity issue. Secondly, variables, which contain
+
+large values, such as Age, STL (steals per game), MP (minutes played), and BLK (blocks per game) were
+normalized. Most importantly, all these transformations, including splitting data into training sets were
+done at once using the recipe function in R and the results were also mirrored to the testing data using the
+bake function.
+
+# Optimal Model: Based on the Lowest AIC Value
+
+```{r}
+rec <- recipe(
+  `3P` ~.,
+  data = train)%>%
+  step_normalize(Age, STL, MP, BLK)%>%
+  step_corr(all_numeric_predictors(), threshold = 0.85)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+log.rec.prep <- prep(rec, training = train)
+
+train_set <- log.rec.prep %>% 
+  bake(new_data = NULL)
+l.model = lm(`3P`~., data = train_set)
+summary(l.model)
+```
+
+Figure 4 Final Model
+
+While all 25 predictor variables namely, age, G, MP, STL, FT%, ORB, AST, BLK, TOV, PF, and
+POS (14 dummy variables) were in the model, the StepAIC selected only 8 variables to statistically
+significant at 0.05 and with the lowest AIC value. The selected variables include G, FT%, ORB, AST,
+Pos_PG and Pos_SG. The coefficient on G is 0.9795, implying that a unit increase in the number of
+games played increases 3 points by at least 0.97, approximately 1, presuming all other factors are held
+constant. The coefficient on Pos_SG (SG = 1, not SG = 0) is 7.993, implying that NBA players in SG
+(shooting guard) position score 8 3-P scores higher than all other positions, when other factors are also
+held constant. In contrast, NBA players in PG positions score 13.60 (approximately 14) less 3P scores
+
+compared to players in other positions. The global F test informs us to reject the null hypothesis all
+coefficients are equal to zero because there is sufficient evidence to indicate that at least one covariate is
+statistically different from zero, F (8, 433) = 116.2, p-value = 2.2e-16 &lt;0.05. Lastly, the adjusted R-
+squared is 0.6763, implying that this final model explains at least 67.63% of the variation in 3-P scores
+across NBA players. The resulting RMSE from prediction on test data is 30.583.
+
+```{r}
+ 
+testing_set <- bake(log.rec.prep, test)
+test[1:10, names(testing_set)]
+
+fitted = predict(l.model, newdata = testing_set)
+actuals = as.numeric(testing_set$`3P`)
+
+sqrt(mean((actuals - fitted)^2))
+```
+
+```{r}
+
+l.model.fin <- lm(`3P` ~., data = train_set) %>%
+  stepAIC(trace = FALSE)
+
+summary(l.model.fin)
+```
+
+```{r message=FALSE, warning=FALSE}
+ 
+testing_set <- bake(log.rec.prep, test)
+test[1:10, names(testing_set)]
+
+fitted = predict(l.model.fin, newdata = testing_set)
+actuals = as.numeric(testing_set$`3P`)
+
+sqrt(mean((actuals - fitted)^2))
+```
+```{r}
+
+plot(fitted,
+     xlab = "Predicted Values",
+     ylab = "Observed Values")+
+  geom_point()+
+abline(a = 0,                                     
+       b = 1,
+       col = "red",
+       lwd = 2)
+
+```
+
 
 
 ```{r}
-library(tidyverse)
-print(getwd())
-data <- read_csv(here::here("dataset/loan_refusal_clean.csv"))
-load(here::here("dataset/loan_refusal.RData"))
-print(ls())
+
+rel_imp <- calc.relimp(l.model.fin, type = c("lmg"), rela = TRUE)
+boo_rslts <- boot.relimp(l.model.fin, b=1000)
+ci <- booteval.relimp(boo_rslts, norank = T)
+plot(ci)
 ```
 
-## Note on Attribution
+Figure 5 Relative Importance
 
-If you are directly quoting from a source, please make that clear. You can show quotes using `>` like this
+Based on the bar chart, games played (G) are ranked as the important predictor of 3-P scores, followed
+closely by AST (number of assists), then STL (steals per game), (DRB) defensive, and (ORB) offensive
+rebounds. Scouts should pay more attention to these characteristics when scouting for NBA players to
+play in the professional league as it will guarantee positive returns on their investments.
 
-```
-> To be or not to be.
-```
-
-> To be or not to be.
-
-Also, make sure to provide a link or citation to where you are quoting from.
-
--------
+---
 
 
 ## Rubric: On this page
