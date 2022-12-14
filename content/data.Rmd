@@ -7,7 +7,7 @@ featuredImage: images/data-import-cheatsheet-thumbs.png
 draft: false
 ---
 
-Links:
+# Links:
 
 1. https://sports-statistics.com/sports-data/nba-basketball-datasets-csv-files/
 2. https://www.basketball-reference.com/leagues/NBA_2020_per_game.html
@@ -21,6 +21,25 @@ played, minutes played, games started) to individual performance metrics, such a
 game, turnover, and field goal percentage.
 
 We use the second data set for our EDA and to help us build graphs such as the correlation plot.
+
+---
+
+# Variables
+
+## 1. Age: Average ages within a team on February 1st of the season
+## 2. W: Number of wins
+## 3. L: Nnumber of losees
+## 4. PW: Pythagorean win - expected number of wins based on points scored and allowed
+## 5. PL: Pythorean Loss - expected number of losses based on points scored and allowed
+## 6. MOV: Margin of Victory
+## 7. SOS: Strength of Schedule - rates the strength of a team's schedule where 0 is average, pos is strong, neg is weak.
+## 8. SRS: Simple Rating System - a team rating that takes into account average point differential and strength of schedule. The rating is denominated in points above/below average, where zero is average
+## 9. ORtg: Offensive Rating - an estimate of points produced (players) or scored (teams) per 100 possessions
+## 10. DRtg: Defensive Rating - an estimate of points allowed per 100 possessions
+## 11. NRtg: Net Rating - an estimate of point differential per 100 possessions
+## 12. Pace: Pace Factor - an estimate of possessions per 48 minutes
+## 13. X3PAr: 3-Point Attempt Rate - percentage of FG Attempts from 3-Point Range
+## 14. Ts: True Shooting Percentage - a measure of shooting efficiency that takes into account 2-point field goals, 3-point field goals, and free throws
 
 ---
 

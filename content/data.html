@@ -12,7 +12,8 @@ draft: false
 
 </div>
 
-<p>Links:</p>
+<div id="links" class="section level1">
+<h1>Links:</h1>
 <ol style="list-style-type: decimal">
 <li><a href="https://sports-statistics.com/sports-data/nba-basketball-datasets-csv-files/" class="uri">https://sports-statistics.com/sports-data/nba-basketball-datasets-csv-files/</a></li>
 <li><a href="https://www.basketball-reference.com/leagues/NBA_2020_per_game.html" class="uri">https://www.basketball-reference.com/leagues/NBA_2020_per_game.html</a></li>
@@ -25,12 +26,58 @@ played, minutes played, games started) to individual performance metrics, such a
 game, turnover, and field goal percentage.</p>
 <p>We use the second data set for our EDA and to help us build graphs such as the correlation plot.</p>
 <hr />
+</div>
+<div id="variables" class="section level1">
+<h1>Variables</h1>
+<div id="age-average-ages-within-a-team-on-february-1st-of-the-season" class="section level2">
+<h2>1. Age: Average ages within a team on February 1st of the season</h2>
+</div>
+<div id="w-number-of-wins" class="section level2">
+<h2>2. W: Number of wins</h2>
+</div>
+<div id="l-nnumber-of-losees" class="section level2">
+<h2>3. L: Nnumber of losees</h2>
+</div>
+<div id="pw-pythagorean-win---expected-number-of-wins-based-on-points-scored-and-allowed" class="section level2">
+<h2>4. PW: Pythagorean win - expected number of wins based on points scored and allowed</h2>
+</div>
+<div id="pl-pythorean-loss---expected-number-of-losses-based-on-points-scored-and-allowed" class="section level2">
+<h2>5. PL: Pythorean Loss - expected number of losses based on points scored and allowed</h2>
+</div>
+<div id="mov-margin-of-victory" class="section level2">
+<h2>6. MOV: Margin of Victory</h2>
+</div>
+<div id="sos-strength-of-schedule---rates-the-strength-of-a-teams-schedule-where-0-is-average-pos-is-strong-neg-is-weak." class="section level2">
+<h2>7. SOS: Strength of Schedule - rates the strength of a team’s schedule where 0 is average, pos is strong, neg is weak.</h2>
+</div>
+<div id="srs-simple-rating-system---a-team-rating-that-takes-into-account-average-point-differential-and-strength-of-schedule.-the-rating-is-denominated-in-points-abovebelow-average-where-zero-is-average" class="section level2">
+<h2>8. SRS: Simple Rating System - a team rating that takes into account average point differential and strength of schedule. The rating is denominated in points above/below average, where zero is average</h2>
+</div>
+<div id="ortg-offensive-rating---an-estimate-of-points-produced-players-or-scored-teams-per-100-possessions" class="section level2">
+<h2>9. ORtg: Offensive Rating - an estimate of points produced (players) or scored (teams) per 100 possessions</h2>
+</div>
+<div id="drtg-defensive-rating---an-estimate-of-points-allowed-per-100-possessions" class="section level2">
+<h2>10. DRtg: Defensive Rating - an estimate of points allowed per 100 possessions</h2>
+</div>
+<div id="nrtg-net-rating---an-estimate-of-point-differential-per-100-possessions" class="section level2">
+<h2>11. NRtg: Net Rating - an estimate of point differential per 100 possessions</h2>
+</div>
+<div id="pace-pace-factor---an-estimate-of-possessions-per-48-minutes" class="section level2">
+<h2>12. Pace: Pace Factor - an estimate of possessions per 48 minutes</h2>
+</div>
+<div id="x3par-3-point-attempt-rate---percentage-of-fg-attempts-from-3-point-range" class="section level2">
+<h2>13. X3PAr: 3-Point Attempt Rate - percentage of FG Attempts from 3-Point Range</h2>
+</div>
+<div id="ts-true-shooting-percentage---a-measure-of-shooting-efficiency-that-takes-into-account-2-point-field-goals-3-point-field-goals-and-free-throws" class="section level2">
+<h2>14. Ts: True Shooting Percentage - a measure of shooting efficiency that takes into account 2-point field goals, 3-point field goals, and free throws</h2>
+<hr />
 <p>This comes from the file <code>content/data.Rmd</code>.</p>
 <p>Your first steps in this project will be to find data to work on.</p>
 <p>I recommend trying to find data that interests you and that you are knowledgeable about. A bad example would be if you have no interest in video games but your data set is about video games. I also recommend finding data that is related to current events, social justice, and other areas that have an impact.</p>
 <p>You are <strong>not</strong> allowed to work on COVID data.</p>
 <p>Initially, you will study <em>one dataset</em> but later you will need to combine that data with another dataset. For this reason, I recommend finding data that has some date and/or location components. These types of data are conducive to interesting visualizations and analysis and you can also combine this data with other data that also has a date or location variable.
 Data from the census, weather data, economic data, are all relatively easy to combine with other data with time/location components.</p>
+</div>
 <div id="where-to-keep-data" class="section level2">
 <h2>Where to keep data?</h2>
 <p>Below 50mb: In <code>dataset</code> folder</p>
@@ -125,4 +172,5 @@ To link to this file, you can use <code>[cleaning script](/load_and_clean_data.R
 <li>Make sure to remove excessive warnings, use clean easy-to-read code (without side scrolling), organize with sections, use bullets and other organization tools, etc.</li>
 </ul></li>
 </ul>
+</div>
 </div>
