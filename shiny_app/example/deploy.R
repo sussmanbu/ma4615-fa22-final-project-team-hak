@@ -6,3 +6,4 @@ rsconnect::setAccountInfo(name='huyphan',
                           secret='m2NTeq931qK64eMN/vGDYF2dc9h6bG9y97VxS7rG')
 
 rsconnect::deployApp('./app.R')
+
