@@ -376,17 +376,11 @@ The descriptive statistic output shows the mean age of NBA players is approximat
 The oldest player is 43 years and the youngest is 19 resulting in a range of about 25 years. The maximum
 number of games a player has started (G) is 74 and the minimum is 1, and this variation could be related
 to player performance whereby a high-performing player is prioritized. The same logic applies to minutes
-played per game (MP). Our target variable is 3P, which is the number of 3-point field goals per game.
-The mean 3-P score is 46.07, the minimum is 0 and the maximum is 299 per game. The 75th quartile is
-201, implying that at least 25% of all NBA players score make about 70 3P scores per game. This cohort
+played per season  (MP). Our target variable is 3P, which is the number of 3-point field goals per season.
+The mean 3-P score is 46.07, the minimum is 0 and the maximum is 299 per season. The 75th quartile is
+201, implying that at least 25% of all NBA players score make about 70 3P scores per season. This cohort
 may represent elite players with consistently good performance, hence, sports organizations should focus
-on not to lose them to rival teams
-The histogram below illustrates the distribution of 3P scoring. It is evident that distribution of 3P scores is
-skewed to the right, as evidenced by most values that lie on the left side of the chart. This means that most
-NBA players score fewer 3P field goals. However, we can discern the presence of outliers – a bar far
-away from the rest of other bars. This outlier represents NBA players with exceptionally high 3P scores
-compared to the general population of NBA players. We are more interested in the general population,
-and hence, it was worthwhile to remove it to avoid skewing the performance of our model.
+on not to lose them to rival teams. The histogram below illustrates the distribution of 3P scoring. It is evident that distribution of 3P scores is skewed to the right, as evidenced by most values that lie on the left side of the chart. This means that most NBA players score fewer 3P field goals. However, we can discern the presence of outliers – a bar far away from the rest of other bars. This outlier represents NBA players with exceptionally high 3P scores compared to the general population of NBA players. We are more interested in the general population, and hence, it was worthwhile to remove it to avoid skewing the performance of our model.
 
 ```{r, fig.align='center',out.extra='angle=90'}
 
@@ -429,17 +423,8 @@ test   <- subset(model_data, sample == FALSE)
 
 Figure 3 Correlation Plot
 
-The correlation plot above identifies the direction and magnitude of association between pairs of variables
-in our dataset. It is evident that there is a moderate positive relationship between 3P scores and games
-played (G, r = 0.644), 3P scores and assists per game (AST, r = 0.613), 3P scores and turnover per game
-(TOV, r = 0.667), and a strong positive relationship between 3P scores and games played (G, r=0.773).
-We can also identify the presence of multicollinearity issues in our dataset, as evidenced by the high
-correlation between pairs of independent variables. For example, there is a high correlation between
-minutes played (MP) and personal fouls per game (PF, r = 0.897), turnover per game (TOV) and MP (r =
-0.853), assist per game (AST) and turnover per game (TOV, r = 0.897). A possible approach to address
-this issue is to remove one of the variables from each pair. We included a cut-off of 0.85 in our regression
-model funciton to eliminate one of the independent variables that are highly correlated, preferably one
-with a higher p-value.
+The correlation plot above identifies the direction and magnitude of association between pairs of variables in our dataset. It is evident that there is a moderate positive relationship between 3P scores and games played (G, r = 0.644), 3P scores and assists per game (AST, r = 0.613), 3P scores and turnover per game (TOV, r = 0.667), and a strong positive relationship between 3P scores and games played (G, r=0.773). We can also identify the presence of multicollinearity issues in our dataset, as evidenced by the high correlation between pairs of independent variables. For example, there is a high correlation between minutes played (MP) and personal fouls per game (PF, r = 0.897), turnover per game (TOV) and MP (r = 0.853), assist per game (AST) and turnover per game (TOV, r = 0.897). A possible approach to address
+this issue is to remove one of the variables from each pair. We included a cut-off of 0.85 in our regression model funciton to eliminate one of the independent variables that are highly correlated, preferably one with a higher p-value.
 
 # Data Transformation
 
@@ -450,8 +435,7 @@ removed the first dummy column to avoid the multicollinearity issue. Secondly, v
 
 large values, such as Age, STL (steals per game), MP (minutes played), and BLK (blocks per game) were
 normalized. Most importantly, all these transformations, including splitting data into training sets were
-done at once using the recipe function in R and the results were also mirrored to the testing data using the
-bake function.
+done at once using the recipe function in R and the results were also mirrored to the testing data using the bake function.
 
 # Optimal Model: Based on the Lowest AIC Value
 
@@ -482,13 +466,8 @@ Pos_PG and Pos_SG. The coefficient on G is 0.9795, implying that a unit increase
 games played increases 3 points by at least 0.97, approximately 1, presuming all other factors are held
 constant. The coefficient on Pos_SG (SG = 1, not SG = 0) is 7.993, implying that NBA players in SG
 (shooting guard) position score 8 3-P scores higher than all other positions, when other factors are also
-held constant. In contrast, NBA players in PG positions score 13.60 (approximately 14) less 3P scores
-
-compared to players in other positions. The global F test informs us to reject the null hypothesis all
-coefficients are equal to zero because there is sufficient evidence to indicate that at least one covariate is
-statistically different from zero, F (8, 433) = 116.2, p-value = 2.2e-16 &lt;0.05. Lastly, the adjusted R-
-squared is 0.6763, implying that this final model explains at least 67.63% of the variation in 3-P scores
-across NBA players. The resulting RMSE from prediction on test data is 30.583.
+held constant. In contrast, NBA players in PG positions score 13.60 (approximately 14) less 3P scores compared to players in other positions. The global F test informs us to reject the null hypothesis all
+coefficients are equal to zero because there is sufficient evidence to indicate that at least one covariate is statistically different from zero, F (8, 433) = 116.2, p-value = 2.2e-16 &lt;0.05. Lastly, the adjusted R-squared is 0.6763, implying that this final model explains at least 67.63% of the variation in 3-P scores across NBA players. The resulting RMSE from prediction on test data is 30.583.
 
 ```{r}
  
