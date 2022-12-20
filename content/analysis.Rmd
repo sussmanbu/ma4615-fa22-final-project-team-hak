@@ -3,9 +3,309 @@ title: Analysis
 description:
 toc: true
 featuredVideo:
-featuredImage: https://upload.wikimedia.org/wikipedia/commons/7/77/Pebbleswithquarzite.jpg
+featuredImage: /images/analysis.png
 draft: false
 ---
+
+# Analyis Part 1
+
+Data exploration and model creation of dataset 1
+We are entering the exciting part of  this project, which is first the data exploration and transformation and cleaning as a foundation of model creation in the last part. The model is aimed to predict NBA players’ 3 pointers made in each season based on the 19-20 season. Remember, all the analysis and prediction is based on the dataset 1!
+
+
+## R Markdown
+```{r echo=FALSE, include=FALSE}
+#load libraries
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(reshape2)
+library(caTools)
+library(recipes)
+library(MASS)
+library(olsrr)
+library(relaimpo)
+```
+
+```{r message=FALSE, warning=FALSE}
+#load data into R
+nba_data <- read_csv("../dataset-ignore/NBA Stats.csv")
+head(nba_data) #glimpse of the data
+```
+
+# Data Preprocessing and Preparation
+
+Before we enter the actual exploration, there are few data transformations, cleaning and filtering we have to make! First of all we want to filter out the player that has three pointers made per game in a season that is lower than 1.5. Since players are having an average that is lower than 1.5 three per game, he can not be counted as a shooter. Normally a player that is not a typical shooter can have their pointer percentages that are extremely low or extremely high! However, you may be asking if we are predicting NBA players’ three pointers made per season, why we care about the percentages, and this is because not only are their percentages extreme, but also they can not make threes consistently. Since we are predicting NBA players’ 3pm based on the current statistics, we want out data from players whose percentage is explainable with reasons.
+Next cleaning for the data is removing the dollar sign for all the numbers for parameters “Salary” in the dataset so that R can read it. Finally, we noticed that R can not read ‘Height’ of NBA players, so we transform the numbers like 8-6 (stands for 6 feet 8) into inches through the function we wrote so that makes it readable for R.
+
+```{r}
+#filter to select players who made at least 1.5 3s per game
+nba_data <- nba_data %>% 
+  filter(`3pm` >= 1.5)
+nba_data$Salary = nba_data$`2018/19`
+
+#remove the $ sign
+nba_data$Salary = as.numeric(gsub("[\\$,]", "", nba_data$Salary ))
+
+#convert weight to kgs
+nba_data$Weight = nba_data$Weight* 0.453592
+
+```
+
+
+```{r}
+#player height is in character form, convert to height in feet
+
+#create a function to do so:
+playerHeight <- function(x) {
+        x1 <- as.numeric(sub("-.*", "", x))
+        x2 <- as.numeric(sub(".*-", "", x))
+        (x1 * 12) + x2
+}
+#apply the function to the height data values
+nba_data$Height <- playerHeight(nba_data$Height)
+
+#select relevant variables into 1 data frame
+nba_df = subset(nba_data, select = c(Age,gp,min,ast,oreb,dreb,fta, stl,Shoes,blk,tov,Salary,Height, Weight,`3pm`))
+
+```
+
+
+#Exploratory Data Analysis (EDA)
+```{r}
+#descriptive stats
+summary(nba_df)
+```
+
+The descriptive statistic output shows the mean age of NBA players is approximately 27 years (27.04).
+The oldest player is 42 years and the youngest is 19 resulting in a range of about 23 years. The mean
+height is 77.77 inches (approximately 6.41 ft). The shortest NBA player is 6ft tall (72 inches) while the
+tallest is 7ft tall (84 inches), translating to a range of 12 inches. With regard to player performance, the
+maximum number of games a played is (gp) is 82 and the minimum is 58, and this variation could be
+related to player performance whereby a high-performing player is highly prioritized in terms of games
+allocation. The same logic applies to minutes played (MP). Our target variable is 3Pm, which is the
+number of 3-point scores made per game. The mean 3-P score is 2.11, the minimum is 1.5 and the
+maximum 3 point scores ever made by one player in one game is 5.11. The 75th quartile is 2.30, implying
+that at least 25% of all NBA players made above 2.3 scores per game. This cohort may represent elite
+players with consistently good performance, hence, sports organizations should focus on not to lose them
+to rival teams.
+
+We wanna first have  a glimpse of the data, as we generate the Min, Median, Mean and Max of some important parameters. The descriptive statistic output shows the mean age of NBA players is approximately 27 years (27.04). The oldest player is 42 years and the youngest is 19 resulting in a range of about 23 years. The mean height is 77.77 inches (approximately 6.41 ft). The shortest NBA player is 6ft tall (72 inches) while the tallest is 7ft tall (84 inches), translating to a range of 12 inches. With regard to player performance, the maximum number of games played is (gp) is 82 and the minimum is 58, and this variation could be related to player performance whereby a high-performing player is highly prioritized in terms of games allocation. The same logic applies to minutes played (MP).  Our target variable is 3Pm, which is the number of 3-point scores made per game. The mean 3-P score is 2.11, the minimum is 1.5 and the maximum 3 point scores ever made by one player in one game is 5.11. The 75th quartile is 2.30, implying that at least 25% of all NBA players made above 2.3 scores per game. This cohort may represent elite players with consistently good performance, hence, sports organizations should focus on not losing them to rival teams.
+
+Then we want to have a more direct view of our ‘protagonist’, 3 pointers made. So we wanna generate a histogram  of distribution of 3 PM. 
+
+
+```{r, fig.align='center',out.extra='angle=90'}
+#histogram plots
+ggplot(nba_df, aes(x =`3pm`))+
+  geom_histogram(color = 'darkblue', fill ='lightblue')+
+  ggtitle('Distribution of 3PM')+
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+The histogram above illustrates the distribution of 3-p scores made (denoted as 3pm). Most NBA players’ ‘three pointers per game’ is around 1.5 to 2.5. Averagely speaking, if a player can hit 2 three pointers per game, it will be impressive. It is evident that distribution of 3P scores is skewed to the right, as evidenced by most values that lie on the left side of the chart. This means that most NBA players score fewer 3P field goals. However, we can discern the presence of outliers – a bar far away from the rest of other bars. This outlier represents NBA players with exceptionally high 3P scores compared to the general population of NBA players. We are more interested in the general population, and hence, it was worthwhile to remove the outliers to avoid skewing the performance of our model.
+
+
+```{r fig.width=10, fig.align='center',out.extra='angle=90'}
+#box plot of 3pm by shoes
+
+ggplot(nba_data, aes(x = Shoes, y=`3pm`, fill=Shoes))+
+  geom_boxplot(outlier.colour = 'red', notch = FALSE)+
+  ggtitle('Box Plot of 3-Point Scores Made by Shoes Worn')+
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+Figure 2
+
+Figure 2 is a side-to-side box plot of the dependent variable, 3pm, by shoe brand. There appears to be an
+association between shoe and player scoring, as evidenced by the variation in mean 3P scores. Players
+using under armour made the highest 3p scores, followed at a distant by Jordan, Adidas, Nike, Puma, and
+so on. This statistical finding supports the inclusion of shoe brand as a predictor of the 3P score and
+checks whether the existing relationship is statistically significant.
+
+```{r, fig.align='center',out.extra='angle=90'}
+col_df <- nba_data %>% group_by(College)%>% summarize(Mean_3Pm= mean(`3pm`))
+con_df <-nba_data %>% group_by(Country)%>% summarize(Mean_3Pm= mean(`3pm`))
+
+plot_ly(col_df, x = ~College, y = ~Mean_3Pm, type = 'bar', text = text)
+plot_ly(con_df, x = ~Country, y = ~Mean_3Pm, type = 'bar', text = text)
+```
+
+
+```{r fig.height=7, fig.width=10, fig.align='center',out.extra='angle=90'}
+#correlation analysis
+cor_df <- subset(nba_df, select =-c(Shoes))
+cor.mat  <- round(cor(cor_df),3) #correlation matrix
+cormat_melt <- melt(cor.mat)
+
+corr_heatmap <- ggplot(data = cormat_melt, aes(x = Var1, y=Var2, label = value, fill = value))+
+  geom_tile()
+corr_heatmap+
+  geom_text(aes(Var1, Var2, label = value), color = "black", size = 4)
+```
+Figure 5 Correlation Matrix
+
+The correlation plot above identifies the direction and magnitude of association between pairs of
+variables in our dataset. It is evident that there is a moderate positive relationship between 3P scores and
+assists (ast, r = 0.262), 3p scores and minutes played (min, r = 0.41), 3p scores and steals (stl, r =0.349),
+and 3p scores and age (r=0.221). It is interesting that correlation between player height and 3p scores is
+negative (r = -0.088). However, further analysis indicate that the correlation coefficient is not statistically
+different from zero, hence, height and 3p scores are unrelated.
+We can also identify the presence of multicollinearity issues in our dataset, as evidenced by the
+high correlation between some of the pairs of independent variables. For example, there is a high
+correlation between assists (ast) and turnover (tov, r = 0.858). A possible approach to address this issue is
+to remove one of the variables from each pair. We included a cut-off of 0.85 in our regression model
+function to eliminate one of the independent variables that is highly correlated, preferably one with a
+higher p-value.
+
+#Interactive Charts
+```{r, fig.align='center',out.extra='angle=90'}
+fig <- plot_ly(data = nba_df, x = ~Height, y = ~`3pm`)
+fig <- fig %>%layout(title = 'A Scatter Plot of 3pt Percentage against Height')
+fig
+```
+
+
+
+```{r, fig.align='center',out.extra='angle=90'}
+fig.2 <- plot_ly(data = nba_data, x = ~`3pm`, y = ~`3pa`, 
+        title = "S")
+fig.2 <- fig.2 %>%layout(title = 'A Scatter Plot of 3pt Percentage against 3pt Made')
+fig.2
+```
+
+```{r}
+fig.3 <- plot_ly(data = nba_data, x = ~eff, y = ~`3pm`)
+fig.3 <- fig %>%layout(title = 'A Scatter Plot of 3pt Percentage against Efficiency')
+fig.3
+```
+Figure 4 Scatterplot (3pm vs Height)
+
+We cannot discern any relationship between 3pm and height, as the points appear random, with no visual
+pattern to indicate association between player’s height and 3-points scores made.
+
+```{r, fig.align='center',out.extra='angle=90'}
+
+fg <- plot_ly(data = nba_df, x = ~Age, y = ~`3pm`)
+fg %>%layout(title = 'A Scatter Plot of 3pt Percentage against Player Age')
+fg
+```
+Figure 3 Scatter plot (3pm vs Age)
+
+The scatterplot above visualizes the relationship between player score performance (3p scores per game)
+by age. There appears to be a positive relationship between age and 3-points scoring. A player is at prime
+in mid 20s and early 30s, and start to decline as he approaches 35 years.
+
+#Full Model
+```{r}
+set.seed(123)
+#define 3pm as y
+nba_df$y = nba_df$`3pm`
+#remove 3pm
+nba_df = subset(nba_df, select = -(`3pm`))
+
+#use 70% of dataset as training set and 30% as test set
+sample <- sample.split(nba_df$y, SplitRatio = 0.8)
+train  <- subset(nba_df, sample == TRUE)
+test   <- subset(nba_df, sample == FALSE)
+
+rec <- recipe(
+  y ~.,
+  data = train)%>%
+  step_normalize(Salary, Age, gp, min, Height, Weight)%>%
+  step_corr(all_numeric_predictors(), threshold = 0.85)%>%
+  step_dummy(Shoes)
+
+log.rec.prep <- prep(rec, training = train) #prepare recipe
+
+train_set <- log.rec.prep %>% #replicate data transformation results to testing data
+  bake(new_data = NULL)
+full.model = lm(y~., data = train_set)
+summary(full.model)
+
+```
+#Model Selection
+
+Optimal Model: Based on the Lowest AIC Value
+
+Figure 6
+Figure 6 shows the final model containing best subsets of variables for predicting
+offensive performance of an NBA player, measured by 3-point scores made (3pm).The selection
+of the variables to include in final model was based on the lowest AIC value. We chose AIC as
+our ideal model selection criterion because it results in the selection of the model that bests fits
+the data and it is moderately tolerant compared to BIC (Yang &amp; Berdine, 2015). The selected
+variables include age, games played (gp), minutes played (min), assist (ast), offensive rebounds
+(oreb), steals (stl), free throws (fta), and shoes. The coefficient on age, min, fta, stl, shoes (new
+balance and under armour) are statistically significant at 0.01 because their corresponding p-
+values is less than 0.01 (see figure 6). To illustrate a few variables, the coefficient on age is
+0.1976, implying that an increase in player age by one year is associated with an increase in 3pt
+scores by 0.2, presuming other factors are held constant. Furthermore, an NBA player wearing
+under armour during play is likely to make more 3pt scores compared to a player wearing other
+brands, such as Under Armour, or Adidas. The resulting equation for predicting player
+performance is:
+Y i = 1.9627 + 0.1976X 1 + 0.091X 2 + 0.294X 3 - 0.165X 4 – 0.254X 5 – 0.152X 6 + 0.474X 7 – 0.148X 8
+-1.10X 9 + 1.139X 10 , where X 1 denotes age, X 2 is gp, X 3 is min, X 4 is ast, X 5 is oreb, X 6 is fta, X 7 is
+stl, X 8 is height, X 9 is Shoes_New.Balance and X 10 is Shoes.Under.Armour.
+The global F test informs us to reject the null hypothesis all coefficients are equal to zero
+because there is sufficient evidence to indicate that at least one covariate is statistically different from
+zero, F (10, 55) = 6.503, p-value = 1.566 e-06 &lt;0.05. Lastly, the adjusted R-squared is 0.4585, implying
+that this final model explains at least 45.9% of the variation in 3-P scores across NBA players.
+
+Predictive Performance on Testing Set
+
+Figure 7 is a scatter plot of actual vs fitted values of 3-points scores made. It is evident
+that most values lie close to the regression line and are within the 95% confidence level region.
+However, some of the values we either under-predicted or over-predicted, as evidenced by the
+points lying far away from the regression line and outside the grey region. The calculated RMSE
+is 0.4868, which is relatively close to 0, hence, the model did great in terms of predicting player
+performance.
+
+```{r}
+#ols_step_best_subset(full.model)
+```
+#final model
+```{r}
+set.seed(123)
+final.model <- stepAIC(full.model, direction ='backward', trace = FALSE)
+reg.summary = summary(final.model)
+reg.summary
+```
+
+```{r, fig.align='center',out.extra='angle=90'}
+ #make predictions on testing dataset using the full model
+testing_set <- bake(log.rec.prep, test)
+testing_set$fitted = predict(final.model, newdata = testing_set)
+
+ggplot(testing_set, aes(x = y, y=fitted))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  ggtitle('fitted vs actual plot')+
+  ylab('Actual')+
+  xlab('Fitted')+
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+Figure 7
+
+```{r}
+#RMSE
+sqrt(mean((testing_set$y - testing_set$fitted)^2))#print RMSE
+```
+```{r}
+#relative importance of predictors
+rel_imp <- calc.relimp(final.model, type = c("lmg"), rela = TRUE)
+rel_imp
+```
+
+Relative Importance
+Based on the output below, free throws made (fta) and minutes played (min) are ranked as the important
+predictor of 3-P scores, followed closely by Shoes (Under Armour), then age and steals (stl). Scouts
+should pay more attention to these metrics when scouting for NBA players to play in the professional
+league as it will guarantee positive returns on their investments.
+
+# Analysis Part 2
 
 ```{r}
 #if(!require(installr)) {
@@ -86,14 +386,14 @@ away from the rest of other bars. This outlier represents NBA players with excep
 compared to the general population of NBA players. We are more interested in the general population,
 and hence, it was worthwhile to remove it to avoid skewing the performance of our model.
 
-```{r}
+```{r, fig.align='center',out.extra='angle=90'}
 
 hist(num_data$`3P`, main = " Distribution of 3P", xlab = 'bins')
 ```
 
 Figure 1 Distribution of 3P Scores
 
-```{r fig.height=8}
+```{r fig.height=8, fig.align='center',out.extra='angle=90'}
 boxplot(play_num$`3P`~ play_num$Pos, 
         main = ' A Boxplot of 3 Point Scoring by Player Position',
         ylab = '3 Point Scoring (3P)', xlab = 'Player Position', col = 'yellow', border = 'brown')
@@ -107,7 +407,7 @@ the highest mean 3P scores, followed at distance by SF-FG, and SG-PG. This findi
 inclusion of player position as a predictor of the 3P score and checks whether the existing relationship is
 statistically significant.
 
-```{r}
+```{r, fig.align='center',out.extra='angle=90'}
 cormatrx  <- round(cor(num_data),3) 
 cormat_melt <- melt(cormatrx)
 
@@ -217,7 +517,7 @@ actuals = as.numeric(testing_set$`3P`)
 
 sqrt(mean((actuals - fitted)^2))
 ```
-```{r}
+```{r, fig.align='center',out.extra='angle=90'}
 
 plot(fitted,
      xlab = "Predicted Values",
@@ -232,7 +532,7 @@ abline(a = 0,
 
 
 
-```{r}
+```{r, fig.align='center',out.extra='angle=90'}
 
 rel_imp <- calc.relimp(l.model.fin, type = c("lmg"), rela = TRUE)
 boo_rslts <- boot.relimp(l.model.fin, b=1000)
@@ -247,329 +547,3 @@ closely by AST (number of assists), then STL (steals per game), (DRB) defensive,
 rebounds. Scouts should pay more attention to these characteristics when scouting for NBA players to
 play in the professional league as it will guarantee positive returns on their investments.
 
----
-
-Analyis Part 2
-
-## R Markdown
-```{r echo=FALSE, include=FALSE}
-#load libraries
-library(readr)
-library(dplyr)
-library(ggplot2)
-library(plotly)
-library(reshape2)
-library(caTools)
-library(recipes)
-library(MASS)
-library(olsrr)
-library(relaimpo)
-```
-
-```{r message=FALSE, warning=FALSE}
-#load data into R
-nba_data <- read_csv("../dataset-ignore/NBA Stats.csv")
-head(nba_data) #glimpse of the data
-```
-
-#Data Preprocessing and Preparation
-```{r}
-#filter to select players who made at least 1.5 3s per game
-nba_data <- nba_data %>% 
-  filter(`3pm` >= 1.5)
-nba_data$Salary = nba_data$`2018/19`
-
-#remove the $ sign
-nba_data$Salary = as.numeric(gsub("[\\$,]", "", nba_data$Salary ))
-
-#convert weight to kgs
-nba_data$Weight = nba_data$Weight* 0.453592
-
-```
-
-
-```{r}
-#player height is in character form, convert to height in feet
-
-#create a function to do so:
-playerHeight <- function(x) {
-        x1 <- as.numeric(sub("-.*", "", x))
-        x2 <- as.numeric(sub(".*-", "", x))
-        (x1 * 12) + x2
-}
-#apply the function to the height data values
-nba_data$Height <- playerHeight(nba_data$Height)
-
-#select relevant variables into 1 data frame
-nba_df = subset(nba_data, select = c(Age,gp,min,ast,oreb,dreb,fta, stl,Shoes,blk,tov,Salary,Height, Weight,`3pm`))
-
-```
-
-
-#Exploratory Data Analysis (EDA)
-```{r}
-#descriptive stats
-summary(nba_df)
-```
-
-The descriptive statistic output shows the mean age of NBA players is approximately 27 years (27.04).
-The oldest player is 42 years and the youngest is 19 resulting in a range of about 23 years. The mean
-height is 77.77 inches (approximately 6.41 ft). The shortest NBA player is 6ft tall (72 inches) while the
-tallest is 7ft tall (84 inches), translating to a range of 12 inches. With regard to player performance, the
-maximum number of games a played is (gp) is 82 and the minimum is 58, and this variation could be
-related to player performance whereby a high-performing player is highly prioritized in terms of games
-allocation. The same logic applies to minutes played (MP). Our target variable is 3Pm, which is the
-number of 3-point scores made per game. The mean 3-P score is 2.11, the minimum is 1.5 and the
-maximum 3 point scores ever made by one player in one game is 5.11. The 75th quartile is 2.30, implying
-that at least 25% of all NBA players made above 2.3 scores per game. This cohort may represent elite
-players with consistently good performance, hence, sports organizations should focus on not to lose them
-to rival teams.
-
-```{r}
-#histogram plots
-ggplot(nba_df, aes(x =`3pm`))+
-  geom_histogram(color = 'darkblue', fill ='lightblue')+
-  ggtitle('Distribution of 3PM')+
-  theme(plot.title = element_text(hjust = 0.5))
-
-```
-
-The histogram above illustrates the distribution of 3-p scores made (denoted as 3pm). It is evident that
-distribution of 3P scores is skewed to the right, as evidenced by most values that lie on the left side of the
-chart. This means that most NBA players score fewer 3P field goals. However, we can discern the
-presence of outliers – a bar far away from the rest of other bars. This outlier represents NBA players with
-exceptionally high 3P scores compared to the general population of NBA players. We are more interested
-in the general population, and hence, it was worthwhile to remove the outliers to avoid skewing the
-performance of our model.
-
-```{r fig.width=10}
-#box plot of 3pm by shoes
-
-ggplot(nba_data, aes(x = Shoes, y=`3pm`, fill=Shoes))+
-  geom_boxplot(outlier.colour = 'red', notch = FALSE)+
-  ggtitle('Box Plot of 3-Point Scores Made by Shoes Worn')+
-  theme(plot.title = element_text(hjust = 0.5))
-
-```
-Figure 2
-
-Figure 2 is a side-to-side box plot of the dependent variable, 3pm, by shoe brand. There appears to be an
-association between shoe and player scoring, as evidenced by the variation in mean 3P scores. Players
-using under armour made the highest 3p scores, followed at a distant by Jordan, Adidas, Nike, Puma, and
-so on. This statistical finding supports the inclusion of shoe brand as a predictor of the 3P score and
-checks whether the existing relationship is statistically significant.
-
-```{r}
-col_df <- nba_data %>% group_by(College)%>% summarize(Mean_3Pm= mean(`3pm`))
-con_df <-nba_data %>% group_by(Country)%>% summarize(Mean_3Pm= mean(`3pm`))
-
-plot_ly(col_df, x = ~College, y = ~Mean_3Pm, type = 'bar', text = text)
-plot_ly(con_df, x = ~Country, y = ~Mean_3Pm, type = 'bar', text = text)
-```
-
-
-```{r fig.height=7, fig.width=10}
-#correlation analysis
-cor_df <- subset(nba_df, select =-c(Shoes))
-cor.mat  <- round(cor(cor_df),3) #correlation matrix
-cormat_melt <- melt(cor.mat)
-
-corr_heatmap <- ggplot(data = cormat_melt, aes(x = Var1, y=Var2, label = value, fill = value))+
-  geom_tile()
-corr_heatmap+
-  geom_text(aes(Var1, Var2, label = value), color = "black", size = 4)
-```
-Figure 5 Correlation Matrix
-
-The correlation plot above identifies the direction and magnitude of association between pairs of
-variables in our dataset. It is evident that there is a moderate positive relationship between 3P scores and
-assists (ast, r = 0.262), 3p scores and minutes played (min, r = 0.41), 3p scores and steals (stl, r =0.349),
-and 3p scores and age (r=0.221). It is interesting that correlation between player height and 3p scores is
-negative (r = -0.088). However, further analysis indicate that the correlation coefficient is not statistically
-different from zero, hence, height and 3p scores are unrelated.
-We can also identify the presence of multicollinearity issues in our dataset, as evidenced by the
-high correlation between some of the pairs of independent variables. For example, there is a high
-correlation between assists (ast) and turnover (tov, r = 0.858). A possible approach to address this issue is
-to remove one of the variables from each pair. We included a cut-off of 0.85 in our regression model
-function to eliminate one of the independent variables that is highly correlated, preferably one with a
-higher p-value.
-
-#Interactive Charts
-```{r}
-fig <- plot_ly(data = nba_df, x = ~Height, y = ~`3pm`)
-fig <- fig %>%layout(title = 'A Scatter Plot of 3pt Percentage against Height')
-fig
-```
-
-
-
-```{r}
-fig.2 <- plot_ly(data = nba_data, x = ~`3pm`, y = ~`3pa`, 
-        title = "S")
-fig.2 <- fig.2 %>%layout(title = 'A Scatter Plot of 3pt Percentage against 3pt Made')
-fig.2
-```
-
-```{r}
-fig.3 <- plot_ly(data = nba_data, x = ~eff, y = ~`3pm`)
-fig.3 <- fig %>%layout(title = 'A Scatter Plot of 3pt Percentage against Efficiency')
-fig.3
-```
-Figure 4 Scatterplot (3pm vs Height)
-
-We cannot discern any relationship between 3pm and height, as the points appear random, with no visual
-pattern to indicate association between player’s height and 3-points scores made.
-
-```{r}
-
-fg <- plot_ly(data = nba_df, x = ~Age, y = ~`3pm`)
-fg %>%layout(title = 'A Scatter Plot of 3pt Percentage against Player Age')
-fg
-```
-Figure 3 Scatter plot (3pm vs Age)
-
-The scatterplot above visualizes the relationship between player score performance (3p scores per game)
-by age. There appears to be a positive relationship between age and 3-points scoring. A player is at prime
-in mid 20s and early 30s, and start to decline as he approaches 35 years.
-
-#Full Model
-```{r}
-set.seed(123)
-#define 3pm as y
-nba_df$y = nba_df$`3pm`
-#remove 3pm
-nba_df = subset(nba_df, select = -(`3pm`))
-
-#use 70% of dataset as training set and 30% as test set
-sample <- sample.split(nba_df$y, SplitRatio = 0.8)
-train  <- subset(nba_df, sample == TRUE)
-test   <- subset(nba_df, sample == FALSE)
-
-rec <- recipe(
-  y ~.,
-  data = train)%>%
-  step_normalize(Salary, Age, gp, min, Height, Weight)%>%
-  step_corr(all_numeric_predictors(), threshold = 0.85)%>%
-  step_dummy(Shoes)
-
-log.rec.prep <- prep(rec, training = train) #prepare recipe
-
-train_set <- log.rec.prep %>% #replicate data transformation results to testing data
-  bake(new_data = NULL)
-full.model = lm(y~., data = train_set)
-summary(full.model)
-
-```
-#Model Selection
-
-Optimal Model: Based on the Lowest AIC Value
-
-Figure 6
-Figure 6 shows the final model containing best subsets of variables for predicting
-offensive performance of an NBA player, measured by 3-point scores made (3pm).The selection
-of the variables to include in final model was based on the lowest AIC value. We chose AIC as
-our ideal model selection criterion because it results in the selection of the model that bests fits
-the data and it is moderately tolerant compared to BIC (Yang &amp; Berdine, 2015). The selected
-variables include age, games played (gp), minutes played (min), assist (ast), offensive rebounds
-(oreb), steals (stl), free throws (fta), and shoes. The coefficient on age, min, fta, stl, shoes (new
-balance and under armour) are statistically significant at 0.01 because their corresponding p-
-values is less than 0.01 (see figure 6). To illustrate a few variables, the coefficient on age is
-0.1976, implying that an increase in player age by one year is associated with an increase in 3pt
-scores by 0.2, presuming other factors are held constant. Furthermore, an NBA player wearing
-under armour during play is likely to make more 3pt scores compared to a player wearing other
-brands, such as Under Armour, or Adidas. The resulting equation for predicting player
-performance is:
-Y i = 1.9627 + 0.1976X 1 + 0.091X 2 + 0.294X 3 - 0.165X 4 – 0.254X 5 – 0.152X 6 + 0.474X 7 – 0.148X 8
--1.10X 9 + 1.139X 10 , where X 1 denotes age, X 2 is gp, X 3 is min, X 4 is ast, X 5 is oreb, X 6 is fta, X 7 is
-stl, X 8 is height, X 9 is Shoes_New.Balance and X 10 is Shoes.Under.Armour.
-The global F test informs us to reject the null hypothesis all coefficients are equal to zero
-because there is sufficient evidence to indicate that at least one covariate is statistically different from
-zero, F (10, 55) = 6.503, p-value = 1.566 e-06 &lt;0.05. Lastly, the adjusted R-squared is 0.4585, implying
-that this final model explains at least 45.9% of the variation in 3-P scores across NBA players.
-
-Predictive Performance on Testing Set
-
-Figure 7 is a scatter plot of actual vs fitted values of 3-points scores made. It is evident
-that most values lie close to the regression line and are within the 95% confidence level region.
-However, some of the values we either under-predicted or over-predicted, as evidenced by the
-points lying far away from the regression line and outside the grey region. The calculated RMSE
-is 0.4868, which is relatively close to 0, hence, the model did great in terms of predicting player
-performance.
-
-```{r}
-#ols_step_best_subset(full.model)
-```
-#final model
-```{r}
-set.seed(123)
-final.model <- stepAIC(full.model, direction ='backward', trace = FALSE)
-reg.summary = summary(final.model)
-reg.summary
-```
-
-```{r}
- #make predictions on testing dataset using the full model
-testing_set <- bake(log.rec.prep, test)
-testing_set$fitted = predict(final.model, newdata = testing_set)
-
-ggplot(testing_set, aes(x = y, y=fitted))+
-  geom_point()+
-  geom_smooth(method='lm')+
-  ggtitle('fitted vs actual plot')+
-  ylab('Actual')+
-  xlab('Fitted')+
-  theme(plot.title = element_text(hjust = 0.5))
-
-```
-Figure 7
-
-```{r}
-#RMSE
-sqrt(mean((testing_set$y - testing_set$fitted)^2))#print RMSE
-```
-```{r}
-#relative importance of predictors
-rel_imp <- calc.relimp(final.model, type = c("lmg"), rela = TRUE)
-rel_imp
-```
-
-Relative Importance
-Based on the output below, free throws made (fta) and minutes played (min) are ranked as the important
-predictor of 3-P scores, followed closely by Shoes (Under Armour), then age and steals (stl). Scouts
-should pay more attention to these metrics when scouting for NBA players to play in the professional
-league as it will guarantee positive returns on their investments.
-
----
-
-## Rubric: On this page
-
-you will
-
-
-* Introduce what motivates your Data Analysis (DA)
-  * Which variables and relationships are you most interested in?
-  * What questions are you interested in answering?
-* Breadth of the DA
-  * Make sure that you ask enough initial questions to explore the different variables in your data.
-  * i.e. Do you explore more than just one or two variables? Do you explore a few different relationships or many?
-* Depth of the DA
-  * When you answer one question, usually more questions arise as well. 
-  * The depth of the DA is about coming up with and exploring the answers to these questions, often iterating the process a few times.
-* Modeling and Inference 
-  * You should also include some kind of formal statistical model and/or inference. This could be a linear regression, logistic regression, hypothesis testing etc.
-  * Explain the techniques you used for validating your results.
-  * Describe the results of your modelling and make sure to give a sense of the uncertainty in your estimates and conclusions.
-* Explain the flaws and limitations of your analysis
-  * Are there some assumptions that you needed to make that might not hold? Is there other data that would help to answer your questions? ...
-* Clarity Figures
-  * Are your figures/tables/results easy to read, informative, without problems like overplotting, hard-to-read labels, etc?
-  * Each figure should provide a key insight. Too many figures or other data summaries can detract from this.
-* Clarity of Explanations
-  * Do you introduce why you are doing each analysis?
-  * How well do you explain each figure/result?
-  * Do you provide interpretations that suggest further analysis or explanations for observed phenomenon?
-* Organization and cleanliness.
-  * Make sure to remove excessive warnings, use clean easy-to-read code, organize with sections or multiple pages, use bullets, etc.
-  
-  
-**NOTE**: Your Data Analysis can be broken up into multiple pages if that helps with your organization.

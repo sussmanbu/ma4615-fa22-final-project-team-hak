@@ -19,6 +19,11 @@ draft: false
 ---
 title: "Raining 3s in the NBA"
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 ```{r include=FALSE} 
 
 # if(!require(installr)) {
@@ -74,12 +79,14 @@ teams <- read_csv(here::here("dataset-ignore", "team_data_clean.csv"))
 player_df <- read_csv(here::here("dataset-ignore","player_data_clean.csv"))
 ```
 
-
-```{r , message=FALSE, warning=FALSE, echo=FALSE }
+```{r , message=FALSE, warning=FALSE, fig.align='center',out.extra='angle=90', echo=FALSE }
 ggplot(teams,aes(ORtg,`3PAr`)) + geom_point() + geom_smooth(method = 'lm',linetype = "dashed")
 ```
+
+
 Out of the thirty teams in the NBA, there seems to be a positive correlation with the number of 3 pointers attempted. This is a good indication of what makes a good offense. In terms of basketball, this allows the offense to space the floor and create more opportunities for players to score inside and outside the 3 point line. 
-```{r , message=FALSE, warning=FALSE, echo=FALSE}
+
+```{r , message=FALSE, warning=FALSE, fig.align='center',out.extra='angle=90', echo=FALSE}
 wins <- teams %>% filter(W > 34)
 
 loss <- teams %>% filter(W < 34)
@@ -89,8 +96,11 @@ geom_point(data = wins, col = "red") +
 geom_point(data = loss, col = "blue") 
 
 ```
+
+
 When looking at the relationship between wins and 3 points percentage, there seems to be a very good indication that the clustering of teams with number of wins that will make playoffs has a shooting percentage of at least 56%. Although they say defense wins championships, a good offense will make it hard for the defense to stop. 
-```{r , message=FALSE, warning=FALSE, echo=FALSE}
+
+```{r , message=FALSE, warning=FALSE, fig.align='center',out.extra='angle=90', echo=FALSE}
 # highlight <- player_df %>%
 #filter(DRB>60)
 ggplot(player_df,aes(`2P%`,`3P%`)) + geom_point() + 
@@ -103,10 +113,15 @@ fill = NA,
 color = "blue",
 size = 1)
 ```
+
+
 Now that the Celtics have seen that there is a relationship between winning and shooting three point field goals. Their next step is to find players that can be either molded into great three point shooters or already are shooting threes at a high level. In the plot above we see that the majority of players who make their two point field goals at a mean rate of about 50% also tend to have a consistent three point percentage of 0.35. The Celtics can use this as a basic criteria for their selection of players.
-```{r , message=FALSE, warning=FALSE, echo=FALSE}
+
+```{r , message=FALSE, warning=FALSE, fig.align='center',out.extra='angle=90', echo=FALSE}
 ggplot(player_df,aes(FTA,`3PA`)) + geom_point() + geom_smooth(method = 'lm',linetype = "dashed")
 ```
+
+
 In order to find players that fit this type of play style, the Celtics also looked at free throws attempted. Surprsingly there seems to be positive correlation between the number of free throws taken and the number of three points attempted. This could mean that players that attack the paint tend to also shoot more three pointers. Typically player that fit in this slasher type of role are not considered shooters, but this suggests that their volume of three point attempts could mean they could potentially be good options for three point shots as well.
 
 The Boston Celtics decide to find more statistics and correlations to find potential great three points shooters. To see more please proceed to the Analysis Page!
@@ -115,22 +130,5 @@ The Boston Celtics decide to find more statistics and correlations to find poten
 Heres an interactive to compare some of the stats for teams!
 [INTERACTIVE LINK](https://huyphan.shinyapps.io/example/)
 
-### Video Recording
-
-Make a video recording (probably using Zoom) demonstrating your interactive components.
-You should provide a quick explanation of your data and demonstrate some of the conclusions from your EDA.
-This video should be no longer than 4 minutes.
-Include a link to your video (and password if needed) in your README.md file on your Github repository. You are not required to provide a link on the website.
-This can be presented by any subset of the team members.
-
-
-### Rest of the Site
-
-Finally, here are important things to keep in mind for the rest of the site. 
-
-The main title of your page is informative.
-Each post has an author/description/informative title.
-All lab required posts are present.
-Each page (including the home page) has a nice featured image associated with it.
-Your about page is up to date and clean.
-You have removed the generic posts from the initial site template.
+Here is the link to the video explaining the interactive:
+[VIDEO LINK](link here)
