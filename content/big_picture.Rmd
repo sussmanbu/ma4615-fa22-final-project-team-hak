@@ -131,4 +131,4 @@ Heres an interactive to compare some of the stats for teams!
 [INTERACTIVE LINK](https://huyphan.shinyapps.io/example/)
 
 Here is the link to the video explaining the interactive:
-[VIDEO LINK](link here)
+[VIDEO LINK](https://youtu.be/56TFIqDGm6w)

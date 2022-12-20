@@ -10,7 +10,7 @@ draft: false
 # Analyis Part 1
 
 Data exploration and model creation of dataset 1
-We are entering the exciting part of  this project, which is first the data exploration and transformation and cleaning as a foundation of model creation in the last part. The model is aimed to predict NBA players’ 3 pointers made in each season based on the 19-20 season. Remember, all the analysis and prediction is based on the dataset 1!
+We are entering the exciting part of  this project, which is first the data exploration and transformation and cleaning as a foundation of model creation in the last part. The model is aimed to predict NBA players’ 3 pointers made in each season based on the 19-20 season. Remember, all the analysis and prediction is based on the dataset 1!!
 
 
 ## R Markdown
@@ -119,11 +119,8 @@ ggplot(nba_data, aes(x = Shoes, y=`3pm`, fill=Shoes))+
 ```
 Figure 2
 
-Figure 2 is a side-to-side box plot of the dependent variable, 3pm, by shoe brand. There appears to be an
-association between shoe and player scoring, as evidenced by the variation in mean 3P scores. Players
-using under armour made the highest 3p scores, followed at a distant by Jordan, Adidas, Nike, Puma, and
-so on. This statistical finding supports the inclusion of shoe brand as a predictor of the 3P score and
-checks whether the existing relationship is statistically significant.
+
+Figure 2 is a side-to-side boxplot of the dependent variable, 3pm, by shoe brand. There appears to be an association between shoe and player scoring, as evidenced by the variation in mean 3P scores. Players using under armor made the highest 3p scores, followed at a distance by Jordan, Adidas, Nike, Puma, and so on. It is interesting to see through this graph that when brand making deals with NBA stars, they have their tendencies. For AU, they are typically aiming guards, especially ones that can hit three consistently. Since they have Stephen Curry as their top star, we can see that they are trying to build cultures of their brand’s stars. Even the only big man they signed has a good 3 pointer percentage and makes!(Joel Embiid). It will be interesting to see other tendencies of other brands, but since it is not related to this project, we will not provide more details. At least, this statistical finding supports the inclusion of shoe brands as a predictor of the 3P score and checks whether the existing relationship is statistically significant.
 
 ```{r, fig.align='center',out.extra='angle=90'}
 col_df <- nba_data %>% group_by(College)%>% summarize(Mean_3Pm= mean(`3pm`))
@@ -133,6 +130,9 @@ plot_ly(col_df, x = ~College, y = ~Mean_3Pm, type = 'bar', text = text)
 plot_ly(con_df, x = ~Country, y = ~Mean_3Pm, type = 'bar', text = text)
 ```
 
+We wanna then take advantage of this data set that contains so many columns, so next we wanna examine the relationships between all these variables with ‘3pm’. We generate the histogram of 3pm that categorizes NBA players from different colleges! It is impressive that Davison college is off the chart thanks to the Best shooter of all time, Stephen Curry! Arizona University is also pretty high, and that is thanks to one of the best scorers in the league James harden! It is really fun to see how these parameters are working together. However, the parameter college is not a parameter we will be using in the prediction since one of the colleges basically only represents 1 player, this stats is too specific and can not be a predictive parameter of the model.
+
+The next interactive chart is to examine the relationship between Mean 3pm with the country, the parameter 3pm is facing the same problem as College, though a little bit better. However, the parameter country is still not qualified to be part of the prediction model since players are too spread into these categories, but also because intuitively, the country cannot contribute to players' three pointer skills.
 
 ```{r fig.height=7, fig.width=10, fig.align='center',out.extra='angle=90'}
 #correlation analysis
@@ -167,6 +167,7 @@ fig <- fig %>%layout(title = 'A Scatter Plot of 3pt Percentage against Height')
 fig
 ```
 
+We then generate a graph between 3pm and Height, the idea behind it is that players were assigned roles and specified their skills according to their heights, so intuitively, players that are shorter(who players mostly guards) could potentially have better three pointer skills. However, after generating these graphs, we cannot discern any relationship between 3pm and height, as the points appear random, with no visual pattern to indicate association between player’s height and 3-points scores made. From my speculation, this is because in modern days, players are having more comprehensive skill bags. More and more 7 foot players are initiating offense outside the three pointer line. As in before, 7 foot players always stay in the paint.
 
 
 ```{r, fig.align='center',out.extra='angle=90'}
@@ -190,7 +191,6 @@ pattern to indicate association between player’s height and 3-points scores ma
 
 fg <- plot_ly(data = nba_df, x = ~Age, y = ~`3pm`)
 fg %>%layout(title = 'A Scatter Plot of 3pt Percentage against Player Age')
-fg
 ```
 Figure 3 Scatter plot (3pm vs Age)
 
@@ -299,11 +299,13 @@ rel_imp <- calc.relimp(final.model, type = c("lmg"), rela = TRUE)
 rel_imp
 ```
 
-Relative Importance
-Based on the output below, free throws made (fta) and minutes played (min) are ranked as the important
-predictor of 3-P scores, followed closely by Shoes (Under Armour), then age and steals (stl). Scouts
-should pay more attention to these metrics when scouting for NBA players to play in the professional
-league as it will guarantee positive returns on their investments.
+
+Relative Importance Based on the output below, free throws made (fta) and minutes played (min) are ranked as the important predictor of 3-P scores, followed closely by Shoes (Under Armour), then age and steals (stl). Scouts should pay more attention to these metrics when scouting for NBA players to play in the professional league as it will guarantee positive returns on their investments.
+
+As a conclusion of the model we can see that some of the parameters are affecting the final result in a more significant way. Like ‘minutes played on the court’ which is min in the model, increases 3 pointers per game averagely 0.3 per minutes, and ‘stl’, which stands for average steal, increases 3 pointers per game averagely 0.47 per steal. As I stated before, these are important parameters for teams or scouts to look at.
+
+For the model, although we think it did not do badly on predicting 3pm, we still think there are improvements. To improve, we first need a data set that contains data for more NBA players. Secondly, we decided to use another parameter ‘3p’, which shows the number of threes players made over a season. This is to avoid filtering out players that hit lower than 1.5 three per game. We now think all the data matters, if a player hits more three than other players, no matter how many games he plays, it has its value and significance behind it.  That’s why we have to introduce our second data set! In our model 2 we use dataset 2 to predict the number of total three pointers made for each player with different parameters.(please see introduction of dataset2 in Data page)
+
 
 # Analysis Part 2
 
@@ -542,8 +544,12 @@ plot(ci)
 
 Figure 5 Relative Importance
 
-Based on the bar chart, games played (G) are ranked as the important predictor of 3-P scores, followed
-closely by AST (number of assists), then STL (steals per game), (DRB) defensive, and (ORB) offensive
-rebounds. Scouts should pay more attention to these characteristics when scouting for NBA players to
-play in the professional league as it will guarantee positive returns on their investments.
+Based on the bar chart, games played (G) are ranked as the important predictor of 3-P scores, followed closely by AST (number of assists), then STL (steals per game), (DRB) defensive, and (ORB) offensive rebounds. Scouts should pay more attention to these characteristics when scouting for NBA players to play in the professional league as it will guarantee positive returns on their investments.
+
+To conclude on the model, we think that the method of multiple linear regression in these two models are not different, we all first prepare the recipe for training and testing, and we all select models based on the lowest AIC value. What’s important is that we applied the different dataset! For dataset 2, although it has fewer columns than dataset1, it is obviously more extensive in terms of number of players, and we think it is probably according to the Law of large numbers, since the larger the observation, the data will be more approximated to a certain distribution. The Next change is that we changed our parameter from three pointers made per game to total three pointers made per season. This is because we decide that all value matters for this model, and we don’t have to filter out the players that made 1.5 three per game this way. 
+
+As for the question, how will the Celtics change their offense settings? Well, this is a really comprehensive question and our project can only answer a little part of it. If they aim to improve a player's total three pointer made in a season, the parameter assist and steal is really important and intuitively this can have a lot of explanation. For example, players that are good at steals are creating more offensive chances or open three chances by initiating fast break after the steal, and so that they can have more three than the other. 
+
+In the end, I hope you enjoy our analysis and prediction on 3 pointers of NBA players, and hope we can provide a little bit of insight that is different from normal NBA media on social media!
+
 
